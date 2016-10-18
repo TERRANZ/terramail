@@ -59,11 +59,11 @@ public class MainWindow extends AbstractUIController {
                             if (loggedIn) {
                                 storedFolders = protocol.listFolders();
                                 storage.storeFolders(storedFolders);
-                                treeRoot = new TreeItem<>(new FoldersTreeItem(storedFolders.get(0)));
-                                storedFolders.get(0).getChildFolders().forEach(cf -> processFolder(treeRoot, cf));
-                                Platform.runLater(() -> tvFolders.setRoot(treeRoot));
                             }
                         }
+                        treeRoot = new TreeItem<>(new FoldersTreeItem(storedFolders.get(0)));
+                        storedFolders.get(0).getChildFolders().forEach(cf -> processFolder(treeRoot, cf));
+                        Platform.runLater(() -> tvFolders.setRoot(treeRoot));
                         return null;
                     }
                 };
