@@ -10,12 +10,17 @@ import java.util.List;
  */
 public class DBStorage extends AbstractStorage {
     @Override
-    public List<MailFolder> getFolders() {
+    public List<MailFolder> getRootFolders() {
         return null;
     }
 
     @Override
-    public void storeFolder(MailFolder mailFolder) {
+    public void storeFolders(List<MailFolder> mailFolders) {
 
+    }
+
+    @Override
+    public List<MailFolder> getFolderMessages(MailFolder mailFolder) {
+        return null;
     }
 }

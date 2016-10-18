@@ -1,9 +1,7 @@
 package ru.terra.mail.storage.entity;
 
 import javax.mail.Folder;
-import javax.mail.MessagingException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -28,14 +26,6 @@ public class MailFolder {
         this.messages = new ArrayList<>();
         this.childFolders = new ArrayList<>();
         this.guid = UUID.randomUUID().toString();
-        try {
-            this.unreadMessages = folder.getUnreadMessageCount();
-            folder.open(Folder.READ_ONLY);
-            Arrays.stream(folder.getMessages()).forEach(m -> this.messages.add(new MailMessage(m, this)));
-        } catch (MessagingException e) {
-            e.printStackTrace();
-        }
-
     }
 
     public List<MailMessage> getMessages() {
