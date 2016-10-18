@@ -1,6 +1,7 @@
 package ru.terra.mail.tests;
 
 import junit.framework.TestCase;
+import ru.terra.mail.TestConstants;
 import ru.terra.mail.core.AbstractMailProtocol;
 import ru.terra.mail.core.prot.imap.ImapProtocol;
 import ru.terra.mail.storage.entity.MailFolder;
