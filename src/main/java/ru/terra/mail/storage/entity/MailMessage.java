@@ -1,5 +1,8 @@
 package ru.terra.mail.storage.entity;
 
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import java.io.IOException;
 import java.util.Date;
 import java.util.UUID;
 
@@ -17,6 +20,20 @@ public class MailMessage {
 
     public MailMessage() {
         guid = UUID.randomUUID().toString();
+    }
+
+    public MailMessage(Message msg, MailFolder mailFolder) {
+        this.guid = UUID.randomUUID().toString();
+        this.folder = mailFolder;
+        try {
+            this.subject = msg.getSubject();
+            this.createDate = msg.getReceivedDate();
+            this.from = msg.getFrom()[0].toString();
+            this.to = msg.getRecipients(Message.RecipientType.TO)[0].toString();
+            this.messageBody = msg.getContent().toString();
+        } catch (MessagingException | IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public MailFolder getFolder() {
