@@ -6,7 +6,6 @@ import javax.mail.Folder;
 import javax.mail.MessagingException;
 import javax.mail.Store;
 import java.security.GeneralSecurityException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,10 +20,12 @@ public abstract class AbstractMailProtocol {
 
     public List<MailFolder> listFolders() throws MessagingException {
         return Arrays.stream(store.getPersonalNamespaces()).map(f -> {
-            MailFolder mailFolder = new MailFolder();
-            mailFolder.setName(f.getName());
-            mailFolder.setChildFolders(new ArrayList<>());
-            return mailFolder;
+            try {
+                return getFolders(f);
+            } catch (MessagingException e) {
+                e.printStackTrace();
+            }
+            return null;
         }).collect(Collectors.toList());
     }
 
