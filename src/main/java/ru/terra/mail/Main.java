@@ -1,7 +1,9 @@
 package ru.terra.mail;
 
+import com.beust.jcommander.JCommander;
 import javafx.application.Application;
 import javafx.stage.Stage;
+import ru.terra.mail.config.StartUpParameters;
 import ru.terra.mail.gui.StageHelper;
 
 /**
@@ -14,6 +16,8 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+        final StartUpParameters parameters = StartUpParameters.getInstance();
+        new JCommander(parameters, getParameters().getRaw().toArray(new String[getParameters().getRaw().size()]));
         StageHelper.openWindow("w_main.fxml", "Main", true);
     }
 }

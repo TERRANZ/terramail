@@ -1,7 +1,7 @@
 package ru.terra.mail.tests;
 
 import junit.framework.TestCase;
-import ru.terra.mail.TestConstants;
+import ru.terra.mail.config.StartUpParameters;
 import ru.terra.mail.core.AbstractMailProtocol;
 import ru.terra.mail.core.prot.imap.ImapProtocol;
 import ru.terra.mail.storage.entity.MailFolder;
@@ -16,7 +16,7 @@ import java.util.List;
 public class ImapProtocolTest extends TestCase {
     public void testLoginAndList() throws MessagingException, GeneralSecurityException {
         AbstractMailProtocol imapProtocol = new ImapProtocol();
-        imapProtocol.login(TestConstants.TEST_USER, TestConstants.TEST_PASS, TestConstants.TEST_SERV);
+        imapProtocol.login(StartUpParameters.getInstance().getUser(), StartUpParameters.getInstance().getPass(), StartUpParameters.getInstance().getServ());
         List<MailFolder> mailFolderList = imapProtocol.listFolders();
         System.out.println(mailFolderList.size());
     }
