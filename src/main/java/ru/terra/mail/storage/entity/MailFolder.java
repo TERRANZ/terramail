@@ -9,6 +9,7 @@ import java.util.UUID;
 public class MailFolder {
     private List<MailMessage> messages;
     private String guid;
+    private String name;
 
     public MailFolder() {
         guid = UUID.randomUUID().toString();
@@ -28,5 +29,13 @@ public class MailFolder {
 
     public void setGuid(String guid) {
         this.guid = guid;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }
