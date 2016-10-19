@@ -3,27 +3,21 @@ package ru.terra.mail.gui.controller.beans;
 import ru.terra.mail.storage.entity.MailMessage;
 
 public class MessagesTableItem {
-	private String subject, date;
+	private MailMessage message;
 
 	public MessagesTableItem(MailMessage message) {
-		this.subject = message.getSubject();
-		this.date = message.getCreateDate().toString();
+		this.message = message;
 	}
 
 	public String getSubject() {
-		return subject;
-	}
-
-	public void setSubject(String subject) {
-		this.subject = subject;
+		return message.getSubject();
 	}
 
 	public String getDate() {
-		return date;
+		return message.getCreateDate().toString();
 	}
 
-	public void setDate(String date) {
-		this.date = date;
+	public MailMessage getMessage() {
+		return message;
 	}
-
 }

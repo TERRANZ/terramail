@@ -74,11 +74,23 @@ public class MainWindow extends AbstractUIController {
 		setColums();
 		showFolders();
 		setFolderSelectionEvents();
+		setMessagesTableSelectionEvents();
 	}
 
 	private void setColums() {
 		colSubject.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getSubject()));
 		colDate.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getDate()));
+	}
+
+	private void setMessagesTableSelectionEvents() {
+		tvMessages.setOnMouseClicked(new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent event) {
+				if (event.getClickCount() == 2)
+					wvMailViewer.getEngine().loadContent(
+							tvMessages.getSelectionModel().getSelectedItem().getMessage().getMessageBody());
+			}
+		});
 	}
 
 	private void setFolderSelectionEvents() {
