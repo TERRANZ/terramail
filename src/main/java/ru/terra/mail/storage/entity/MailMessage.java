@@ -20,6 +20,8 @@ public class MailMessage {
     private String to;
     private String messageBody;
     private String guid;
+    @JsonIgnore
+    private Message message;
 
     public MailMessage() {
         guid = UUID.randomUUID().toString();
@@ -37,6 +39,7 @@ public class MailMessage {
         } catch (MessagingException | IOException e) {
             e.printStackTrace();
         }
+        this.message = msg;
     }
 
     public MailFolder getFolder() {
@@ -93,5 +96,13 @@ public class MailMessage {
 
     public void setGuid(String guid) {
         this.guid = guid;
+    }
+
+    public Message getMessage() {
+        return message;
+    }
+
+    public void setMessage(Message message) {
+        this.message = message;
     }
 }

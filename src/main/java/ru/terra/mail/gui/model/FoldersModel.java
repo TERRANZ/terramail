@@ -70,10 +70,22 @@ public class FoldersModel extends AbstractModel<MailFolder> {
                 else
                     storedFolder.setDeleted(true);
             }
+            mergeFoldersTree(storedFolders, serverFoldersMap);
         }
 
         storage.storeFolders(storedFolders);
         return storedFolders;
+    }
+
+    private void mergeFoldersTree(List<MailFolder> storedFolders, Map<String, MailFolder> serverFoldersMap) {
+        List<MailFolder> foldersToAdd = new ArrayList<>();
+        for (MailFolder storedFolder : storedFolders)
+            if (!serverFoldersMap.containsKey(storedFolder.getFullName()))
+                foldersToAdd.add(serverFoldersMap.get(storedFolder.getFullName()));
+            else
+                mergeFoldersTree(storedFolder.getChildFolders(), serverFoldersMap);
+
+        storedFolders.addAll(foldersToAdd);
     }
 
     private List<MailFolder> expandFoldersTree(MailFolder mailFolder) {

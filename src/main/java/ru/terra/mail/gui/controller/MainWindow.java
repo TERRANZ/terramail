@@ -59,9 +59,11 @@ public class MainWindow extends AbstractUIController {
 
     private void setMessagesTableSelectionEvents() {
         tvMessages.setOnMouseClicked(event -> {
-            if (event.getClickCount() == 2)
-                wvMailViewer.getEngine().loadContent(
-                        tvMessages.getSelectionModel().getSelectedItem().getMessage().getMessageBody());
+            if (event.getClickCount() == 2) {
+                MessagesTableItem item = tvMessages.getSelectionModel().getSelectedItem();
+                if (item != null)
+                    wvMailViewer.getEngine().loadContent(item.getMessage().getMessageBody());
+            }
         });
     }
 
@@ -75,41 +77,68 @@ public class MainWindow extends AbstractUIController {
     }
 
     private void showFolders() {
-        new Service<Void>() {
-            @Override
-            protected Task<Void> createTask() {
-                return new Task<Void>() {
-                    @Override
-                    protected Void call() throws Exception {
-                        treeRoot = FoldersModel.getTreeRoot();
-                        Platform.runLater(() -> tvFolders.setRoot(treeRoot));
-                        return null;
-                    }
-                };
-            }
-        }.start();
+        LoadFolderService loadFolderService = new LoadFolderService();
+        loadFolderService.start();
+        loadFolderService.setOnSucceeded((e) -> updateStatus("Folders loaded"));
     }
 
     private void showMessages(MailFolder mailFolder) {
         updateStatus(mailFolder.getFullName());
-        new Service<Void>() {
-            @Override
-            protected Task<Void> createTask() {
-                return new Task<Void>() {
-                    @Override
-                    protected Void call() throws Exception {
-                        List<MailMessage> folderMessages = messagesModel.getFolderMessages(mailFolder);
-                        if (folderMessages != null && folderMessages.size() > 0)
-                            Platform.runLater(() -> tvMessages.setItems(FXCollections.observableArrayList(
-                                    folderMessages.stream().map(MessagesTableItem::new).collect(Collectors.toList()))));
-                        return null;
-                    }
-                };
-            }
-        }.start();
+        updateStatus("Messages loading");
+        LoadMessagesService loadMessagesService = new LoadMessagesService(mailFolder);
+        loadMessagesService.start();
+        loadMessagesService.setOnSucceeded((e) ->
+                Platform.runLater(
+                        () -> {
+                            tvMessages.setItems(
+                                    FXCollections.observableArrayList(
+                                            loadMessagesService
+                                                    .getValue()
+                                                    .stream()
+                                                    .map(MessagesTableItem::new)
+                                                    .collect(Collectors.toList())
+                                    )
+                            );
+                            updateStatus("Messages loaded");
+                        }
+                )
+        );
     }
 
     private void updateStatus(String status) {
         Platform.runLater(() -> lblStatus.setText(status));
+    }
+
+    private class LoadFolderService extends Service<Void> {
+        @Override
+        protected Task<Void> createTask() {
+            return new Task<Void>() {
+                @Override
+                protected Void call() throws Exception {
+                    treeRoot = FoldersModel.getTreeRoot();
+                    treeRoot.setExpanded(true);
+                    Platform.runLater(() -> tvFolders.setRoot(treeRoot));
+                    return null;
+                }
+            };
+        }
+    }
+
+    private class LoadMessagesService extends Service<List<MailMessage>> {
+        private MailFolder mailFolder;
+
+        public LoadMessagesService(MailFolder mailFolder) {
+            this.mailFolder = mailFolder;
+        }
+
+        @Override
+        protected Task<List<MailMessage>> createTask() {
+            return new Task<List<MailMessage>>() {
+                @Override
+                protected List<MailMessage> call() throws Exception {
+                    return messagesModel.getFolderMessages(mailFolder);
+                }
+            };
+        }
     }
 }

@@ -6,7 +6,6 @@ import ru.terra.mail.storage.entity.MailMessage;
 import javax.mail.Folder;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -15,22 +14,43 @@ import java.util.stream.Collectors;
  */
 public class MessagesModel extends AbstractModel<MailMessage> {
     public List<MailMessage> getFolderMessages(MailFolder folder) {
-        List<MailMessage> ret = storage.getFolderMessages(folder);
-        if (ret == null) {
-            ret = new ArrayList<>();
-            try {
-                folder.getFolder().open(Folder.READ_ONLY);
-                ret.addAll((Collection<? extends MailMessage>) Arrays.stream(folder.getFolder().getMessages())
-                        .map(m -> new MailMessage(m, folder)).collect(Collectors.toList()));
-            } catch (Exception e) {
-                e.printStackTrace();
+        List<MailMessage> stored = storage.getFolderMessages(folder);
+        if (stored == null) {
+            stored = loadFromFolder(folder);
+        } else {
+            List<MailMessage> loaded = loadFromFolder(folder);
+            List<MailMessage> toAdd = new ArrayList<>();
+            List<MailMessage> toDel = new ArrayList<>();
+            for (MailMessage loadedMessage : loaded) {
+                MailMessage storedMessage = messageExists(loadedMessage.getCreateDate().getTime(), stored);
+                if (storedMessage == null)
+                    toAdd.add(loadedMessage);
             }
+            for (MailMessage storedMessage : stored)
+                if (messageExists(storedMessage.getCreateDate().getTime(), loaded) == null)
+                    toDel.add(storedMessage);
         }
-        merge(folder, ret);
-        return ret;
+
+        storage.storeFolderMessages(folder, stored);
+        return stored;
     }
 
-    protected void merge(MailFolder mailFolder, List<MailMessage> beans) {
-        storage.storeFolderMessages(mailFolder, beans);
+    private MailMessage messageExists(long date, List<MailMessage> messages) {
+        for (MailMessage m : messages)
+            if (m.getCreateDate().getTime() == date)
+                return m;
+        return null;
+    }
+
+    private List<MailMessage> loadFromFolder(MailFolder folder) {
+        List<MailMessage> ret = new ArrayList<>();
+        try {
+            folder.getFolder().open(Folder.READ_ONLY);
+            ret.addAll(Arrays.stream(folder.getFolder().getMessages())
+                    .map(m -> new MailMessage(m, folder)).collect(Collectors.toList()));
+        } catch (Exception e) {
+            logger.error("Unable to load messages from server", e);
+        }
+        return ret;
     }
 }
