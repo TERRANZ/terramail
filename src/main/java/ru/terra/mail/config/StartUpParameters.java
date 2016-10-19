@@ -6,14 +6,13 @@ import com.beust.jcommander.Parameter;
  * Created by terranz on 19.10.16.
  */
 public class StartUpParameters {
+    private static StartUpParameters instance = new StartUpParameters();
     @Parameter(names = {"-u", "--user"}, description = "Mail user")
     private String user = "test";
     @Parameter(names = {"-p", "--pass"}, description = "Mail pass")
     private String pass = "test";
     @Parameter(names = {"-s", "--serv"}, description = "Mail server address")
     private String serv = "test";
-
-    private static StartUpParameters instance = new StartUpParameters();
 
     private StartUpParameters() {
     }

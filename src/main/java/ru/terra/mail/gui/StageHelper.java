@@ -4,7 +4,6 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.image.Image;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
@@ -22,16 +21,6 @@ import java.util.List;
  */
 public class StageHelper {
     private static List<Stage> openedStages = new ArrayList<>();
-
-    private static class StageCloseEventHandler implements EventHandler<WindowEvent> {
-        @Override
-        public void handle(WindowEvent windowEvent) {
-            openedStages.remove(windowEvent.getTarget());
-            if (openedStages.size() == 0)
-                System.exit(0);
-        }
-    }
-
     private static StageCloseEventHandler stageCloseEventHandler = new StageCloseEventHandler();
 
     public static <T> Pair<Parent, T> loadRoot(String fxmlFileName) {
@@ -76,5 +65,14 @@ public class StageHelper {
         T dialogController = (T) windowPair.getValue();
         dialogController.setCurrStage(stage);
         return new Pair<>(stage, dialogController);
+    }
+
+    private static class StageCloseEventHandler implements EventHandler<WindowEvent> {
+        @Override
+        public void handle(WindowEvent windowEvent) {
+            openedStages.remove(windowEvent.getTarget());
+            if (openedStages.size() == 0)
+                System.exit(0);
+        }
     }
 }
