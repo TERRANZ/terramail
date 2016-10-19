@@ -17,6 +17,13 @@ public class FoldersModel extends AbstractModel<MailFolder> {
 
     private TreeItem<FoldersTreeItem> treeRoot;
 
+    public TreeItem<FoldersTreeItem> getStoredFolders() {
+        List<MailFolder> folders = storage.getRootFolders();
+        treeRoot = new TreeItem<>(new FoldersTreeItem(folders.get(0)));
+        folders.get(0).getChildFolders().forEach(cf -> processFolder(treeRoot, cf));
+        return treeRoot;
+    }
+
     public TreeItem<FoldersTreeItem> getTreeRoot() {
         List<MailFolder> folders = getFolders();
         treeRoot = new TreeItem<>(new FoldersTreeItem(folders.get(0)));

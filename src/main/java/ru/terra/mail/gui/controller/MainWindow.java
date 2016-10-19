@@ -37,7 +37,7 @@ public class MainWindow extends AbstractUIController {
     @FXML
     private TableView<MessagesTableItem> tvMessages;
     private TreeItem<FoldersTreeItem> treeRoot;
-    private FoldersModel FoldersModel = new FoldersModel();
+    private FoldersModel foldersModel = new FoldersModel();
     private MessagesModel messagesModel = new MessagesModel();
     @FXML
     private TableColumn<MessagesTableItem, String> colSubject;
@@ -77,6 +77,10 @@ public class MainWindow extends AbstractUIController {
     }
 
     private void showFolders() {
+        treeRoot = foldersModel.getStoredFolders();
+        treeRoot.setExpanded(true);
+        if (treeRoot != null)
+            tvFolders.setRoot(treeRoot);
         LoadFolderService loadFolderService = new LoadFolderService();
         loadFolderService.start();
         loadFolderService.setOnSucceeded((e) -> updateStatus("Folders loaded"));
@@ -85,23 +89,23 @@ public class MainWindow extends AbstractUIController {
     private void showMessages(MailFolder mailFolder) {
         updateStatus(mailFolder.getFullName());
         updateStatus("Messages loading");
+        List<MailMessage> storedMessages = messagesModel.getStoredMessages(mailFolder);
+        if (storedMessages != null && storedMessages.size() > 0)
+            tvMessages.setItems(FXCollections.observableArrayList(storedMessages.stream().map(MessagesTableItem::new).collect(Collectors.toList())));
         LoadMessagesService loadMessagesService = new LoadMessagesService(mailFolder);
         loadMessagesService.start();
-        loadMessagesService.setOnSucceeded((e) ->
-                Platform.runLater(
-                        () -> {
-                            tvMessages.setItems(
-                                    FXCollections.observableArrayList(
-                                            loadMessagesService
-                                                    .getValue()
-                                                    .stream()
-                                                    .map(MessagesTableItem::new)
-                                                    .collect(Collectors.toList())
-                                    )
-                            );
-                            updateStatus("Messages loaded");
-                        }
-                )
+        loadMessagesService.setOnSucceeded((e) -> {
+                    tvMessages.setItems(
+                            FXCollections.observableArrayList(
+                                    loadMessagesService
+                                            .getValue()
+                                            .stream()
+                                            .map(MessagesTableItem::new)
+                                            .collect(Collectors.toList())
+                            )
+                    );
+                    updateStatus("Messages loaded");
+                }
         );
     }
 
@@ -115,7 +119,7 @@ public class MainWindow extends AbstractUIController {
             return new Task<Void>() {
                 @Override
                 protected Void call() throws Exception {
-                    treeRoot = FoldersModel.getTreeRoot();
+                    treeRoot = foldersModel.getTreeRoot();
                     treeRoot.setExpanded(true);
                     Platform.runLater(() -> tvFolders.setRoot(treeRoot));
                     return null;

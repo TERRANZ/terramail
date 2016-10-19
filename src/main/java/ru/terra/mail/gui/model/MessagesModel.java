@@ -13,6 +13,11 @@ import java.util.stream.Collectors;
  * Created by terranz on 19.10.16.
  */
 public class MessagesModel extends AbstractModel<MailMessage> {
+
+    public List<MailMessage> getStoredMessages(MailFolder folder) {
+        return storage.getFolderMessages(folder);
+    }
+
     public List<MailMessage> getFolderMessages(MailFolder folder) {
         List<MailMessage> stored = storage.getFolderMessages(folder);
         if (stored == null) {
