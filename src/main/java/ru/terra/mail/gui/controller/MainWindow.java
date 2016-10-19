@@ -5,22 +5,16 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.web.WebView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.terra.mail.config.Configuration;
-import ru.terra.mail.core.AbstractMailProtocol;
 import ru.terra.mail.gui.controller.beans.FoldersTreeItem;
 import ru.terra.mail.gui.controller.beans.MessagesTableItem;
 import ru.terra.mail.gui.core.AbstractUIController;
 import ru.terra.mail.gui.model.FoldersModel;
 import ru.terra.mail.gui.model.MessagesModel;
-import ru.terra.mail.storage.AbstractStorage;
-import ru.terra.mail.storage.StorageSingleton;
 import ru.terra.mail.storage.entity.MailFolder;
 import ru.terra.mail.storage.entity.MailMessage;
 
@@ -43,8 +37,6 @@ public class MainWindow extends AbstractUIController {
     @FXML
     private TableView<MessagesTableItem> tvMessages;
     private TreeItem<FoldersTreeItem> treeRoot;
-    private AbstractStorage storage = StorageSingleton.getInstance().getStorage();
-    private AbstractMailProtocol protocol = Configuration.getInstance().getMailProtocol();
     private FoldersModel FoldersModel = new FoldersModel();
     private MessagesModel messagesModel = new MessagesModel();
     @FXML
@@ -66,24 +58,18 @@ public class MainWindow extends AbstractUIController {
     }
 
     private void setMessagesTableSelectionEvents() {
-        tvMessages.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                if (event.getClickCount() == 2)
-                    wvMailViewer.getEngine().loadContent(
-                            tvMessages.getSelectionModel().getSelectedItem().getMessage().getMessageBody());
-            }
+        tvMessages.setOnMouseClicked(event -> {
+            if (event.getClickCount() == 2)
+                wvMailViewer.getEngine().loadContent(
+                        tvMessages.getSelectionModel().getSelectedItem().getMessage().getMessageBody());
         });
     }
 
     private void setFolderSelectionEvents() {
-        tvFolders.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                if (event.getClickCount() == 2) {
-                    TreeItem<FoldersTreeItem> item = tvFolders.getSelectionModel().getSelectedItem();
-                    showMessages(item.getValue().getMailFolder());
-                }
+        tvFolders.setOnMouseClicked(event -> {
+            if (event.getClickCount() == 2) {
+                TreeItem<FoldersTreeItem> item = tvFolders.getSelectionModel().getSelectedItem();
+                showMessages(item.getValue().getMailFolder());
             }
         });
     }

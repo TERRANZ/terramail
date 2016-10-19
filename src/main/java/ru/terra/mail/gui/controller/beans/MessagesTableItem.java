@@ -2,6 +2,9 @@ package ru.terra.mail.gui.controller.beans;
 
 import ru.terra.mail.storage.entity.MailMessage;
 
+/**
+ * Created by terranz on 19.10.16.
+ */
 public class MessagesTableItem {
     private MailMessage message;
 

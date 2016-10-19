@@ -10,6 +10,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Created by terranz on 19.10.16.
+ */
 public class MessagesModel extends AbstractModel<MailMessage> {
     public List<MailMessage> getFolderMessages(MailFolder folder) {
         List<MailMessage> ret = storage.getFolderMessages(folder);
