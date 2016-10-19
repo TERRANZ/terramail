@@ -16,6 +16,7 @@ import ru.terra.mail.config.StartUpParameters;
 import ru.terra.mail.core.AbstractMailProtocol;
 import ru.terra.mail.gui.controller.beans.FoldersTreeItem;
 import ru.terra.mail.gui.core.AbstractUIController;
+import ru.terra.mail.gui.model.FoldersModel;
 import ru.terra.mail.storage.AbstractStorage;
 import ru.terra.mail.storage.StorageSingleton;
 import ru.terra.mail.storage.entity.MailFolder;
@@ -41,6 +42,7 @@ public class MainWindow extends AbstractUIController {
 	private TreeItem<FoldersTreeItem> treeRoot;
 	private AbstractStorage storage = StorageSingleton.getInstance().getStorage();
 	private AbstractMailProtocol protocol = Configuration.getInstance().getMailProtocol();
+	private FoldersModel FoldersModel = new FoldersModel();
 
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
@@ -55,7 +57,7 @@ public class MainWindow extends AbstractUIController {
 			public void handle(MouseEvent event) {
 				if (event.getClickCount() == 2) {
 					TreeItem<FoldersTreeItem> item = tvFolders.getSelectionModel().getSelectedItem();
-					lblStatus.setText(item.getValue().toString());
+					showFolder(item.getValue().getMailFolder());
 				}
 			}
 		});
@@ -67,23 +69,8 @@ public class MainWindow extends AbstractUIController {
 			protected Task<Void> createTask() {
 				return new Task<Void>() {
 					@Override
-					protected Void call() throws Exception {
-						List<MailFolder> storedFolders = storage.getRootFolders();
-						if (storedFolders == null) {
-							boolean loggedIn = false;
-							try {
-								performLogin();
-								loggedIn = true;
-							} catch (Exception e) {
-								logger.error("Unable to login", e);
-							}
-							if (loggedIn) {
-								storedFolders = protocol.listFolders();
-								storage.storeFolders(storedFolders);
-							}
-						}
-						treeRoot = new TreeItem<>(new FoldersTreeItem(storedFolders.get(0)));
-						storedFolders.get(0).getChildFolders().forEach(cf -> processFolder(treeRoot, cf));
+					protected Void call() throws Exception {						
+						treeRoot = FoldersModel.getTreeRoot();
 						Platform.runLater(() -> tvFolders.setRoot(treeRoot));
 						return null;
 					}
@@ -92,12 +79,7 @@ public class MainWindow extends AbstractUIController {
 		}.start();
 	}
 
-	private TreeItem<FoldersTreeItem> processFolder(TreeItem<FoldersTreeItem> parent, MailFolder mailFolder) {
-		TreeItem<FoldersTreeItem> ret = new TreeItem<>(new FoldersTreeItem(mailFolder));
-		parent.getChildren().add(ret);
-		mailFolder.getChildFolders().forEach(cf -> processFolder(ret, cf));
-		return ret;
-	}
+
 
 	private void performLogin() throws GeneralSecurityException, MessagingException {
 		protocol.login(StartUpParameters.getInstance().getUser(), StartUpParameters.getInstance().getPass(),
@@ -105,6 +87,10 @@ public class MainWindow extends AbstractUIController {
 	}
 
 	private void showFolder(MailFolder mailFolder) {
+		updateStatus(mailFolder.getFullName());
+	}
 
+	private void updateStatus(String status) {
+		Platform.runLater(() -> lblStatus.setText(status));
 	}
 }
