@@ -13,10 +13,10 @@
             <menus>
                 <Menu mnemonicParsing="false" text="Program">
                     <items>
-                        <MenuItem mnemonicParsing="false" onAction="#close" text="Close"/>
+                        <MenuItem mnemonicParsing="false" onAction="#config" text="Configuration"/>
                     </items>
                     <items>
-                        <MenuItem mnemonicParsing="false" onAction="#config" text="Configuration"/>
+                        <MenuItem mnemonicParsing="false" onAction="#close" text="Close"/>
                     </items>
                 </Menu>
             </menus>
