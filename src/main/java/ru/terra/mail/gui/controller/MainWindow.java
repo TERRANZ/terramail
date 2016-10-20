@@ -5,6 +5,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.web.WebView;
@@ -132,6 +133,14 @@ public class MainWindow extends AbstractUIController {
 
     private void updateStatus(String status) {
         Platform.runLater(() -> lblStatus.setText(status));
+    }
+
+    public void close(ActionEvent actionEvent) {
+        currStage.close();
+    }
+
+    public void config(ActionEvent actionEvent) {
+
     }
 
     private class LoadFolderService extends Service<Void> {
