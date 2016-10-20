@@ -74,8 +74,22 @@ public class MainWindow extends AbstractUIController {
         tvMessages.setOnMouseClicked(event -> {
             if (event.getClickCount() == 2) {
                 MessagesTableItem item = tvMessages.getSelectionModel().getSelectedItem();
-                if (item != null)
-                    wvMailViewer.getEngine().loadContent(item.getMessage().getMessageBody());
+                if (item != null) {
+                    String body = "";
+                    MailMessage msg = item.getMessage();
+                    if (msg.getMessageBody() != null)
+                        wvMailViewer.getEngine().loadContent(msg.getMessageBody());
+                    else {
+                        if (msg.getAttachments().size() > 0) {
+                            msg.getAttachments()
+                                    .stream()
+                                    .filter(attachment -> attachment.getType().contains("text/plain"))
+                                    .forEach(attachment ->
+                                            wvMailViewer.getEngine().loadContent(new String(attachment.getBody()))
+                                    );
+                        }
+                    }
+                }
             }
         });
     }

@@ -30,6 +30,8 @@ public class MessagesModel extends AbstractModel<MailMessage> {
             stored = loadFromFolder(folder);
         } else {
             List<MailMessage> loaded = loadFromFolder(folder);
+            if (loaded == null)
+                return stored;
             List<MailMessage> toAdd = new ArrayList<>();
             List<MailMessage> toDel = new ArrayList<>();
             for (MailMessage loadedMessage : loaded) {
@@ -59,7 +61,10 @@ public class MessagesModel extends AbstractModel<MailMessage> {
     private List<MailMessage> loadFromFolder(MailFolder folder) {
         List<MailMessage> ret = new ArrayList<>();
         try {
-            folder.getFolder().open(Folder.READ_ONLY);
+            if (folder.getFolder() == null)
+                return null;
+            if (!folder.getFolder().isOpen())
+                folder.getFolder().open(Folder.READ_ONLY);
             ret.addAll(Arrays.stream(folder.getFolder().getMessages()).map(m -> {
                 MailMessage msg = new MailMessage(m, folder);
                 processMailMessage(msg);
@@ -79,12 +84,8 @@ public class MessagesModel extends AbstractModel<MailMessage> {
                 MimeMultipart multipart = (MimeMultipart) msg.getContent();
                 for (int j = 0; j < multipart.getCount(); j++) {
                     BodyPart bodyPart = multipart.getBodyPart(j);
-//                    String disposition = bodyPart.getDisposition();
-//                    if (disposition != null && (disposition.equalsIgnoreCase("ATTACHMENT"))) {
                     DataHandler handler = bodyPart.getDataHandler();
                     mm.getAttachments().add(new MailMessageAttachment(IOUtils.toByteArray(handler.getInputStream()), handler.getContentType(), handler.getName()));
-//                    } else
-//                        mm.setMessageBody(msg.getContent().toString());
                 }
             } else
                 mm.setMessageBody(msg.getContent().toString());
