@@ -4,22 +4,25 @@ import org.codehaus.jackson.annotate.JsonIgnore;
 
 import javax.mail.Message;
 import javax.mail.MessagingException;
-import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 /**
  * Created by terranz on 18.10.16.
  */
 public class MailMessage {
-    @JsonIgnore
-    private MailFolder folder;
+
     private Date createDate;
     private String subject;
     private String from;
     private String to;
     private String messageBody;
+    private List<MailMessageAttachment> attachments;
     private String guid;
+    @JsonIgnore
+    private MailFolder folder;
     @JsonIgnore
     private Message message;
 
@@ -35,11 +38,11 @@ public class MailMessage {
             this.createDate = msg.getReceivedDate();
             this.from = msg.getFrom()[0].toString();
             this.to = msg.getRecipients(Message.RecipientType.TO)[0].toString();
-            this.messageBody = msg.getContent().toString();
-        } catch (MessagingException | IOException e) {
+        } catch (MessagingException e) {
             e.printStackTrace();
         }
         this.message = msg;
+        this.attachments = new ArrayList<>();
     }
 
     public MailFolder getFolder() {
@@ -104,5 +107,13 @@ public class MailMessage {
 
     public void setMessage(Message message) {
         this.message = message;
+    }
+
+    public List<MailMessageAttachment> getAttachments() {
+        return attachments;
+    }
+
+    public void setAttachments(List<MailMessageAttachment> attachments) {
+        this.attachments = attachments;
     }
 }
