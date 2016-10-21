@@ -1,5 +1,6 @@
 package ru.terra.mail.gui.controller;
 
+import com.sun.mail.imap.IMAPMessage;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
@@ -9,8 +10,10 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.web.WebView;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.terra.mail.gui.StageHelper;
 import ru.terra.mail.gui.controller.beans.FoldersTreeItem;
 import ru.terra.mail.gui.controller.beans.MessagesTableItem;
 import ru.terra.mail.gui.core.AbstractUIController;
@@ -19,8 +22,10 @@ import ru.terra.mail.gui.model.MessagesModel;
 import ru.terra.mail.storage.entity.MailFolder;
 import ru.terra.mail.storage.entity.MailMessage;
 
+import javax.mail.Header;
 import java.net.URL;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
@@ -78,6 +83,7 @@ public class MainWindow extends AbstractUIController {
                 if (item != null) {
                     String body = "";
                     MailMessage msg = item.getMessage();
+                    wvMailViewer.setUserData(msg);
                     if (msg.getMessageBody() != null)
                         wvMailViewer.getEngine().loadContent(msg.getMessageBody());
                     else {
@@ -106,6 +112,7 @@ public class MainWindow extends AbstractUIController {
     }
 
     private void showFolders() {
+        updateStatus("Folders loadeding...");
         treeRoot = foldersModel.getStoredFolders();
         treeRoot.setExpanded(true);
         if (treeRoot != null)
@@ -140,6 +147,28 @@ public class MainWindow extends AbstractUIController {
     }
 
     public void config(ActionEvent actionEvent) {
+
+    }
+
+    public void showSource(ActionEvent actionEvent) {
+        MailMessage msg = (MailMessage) wvMailViewer.getUserData();
+        if (msg.getMessage() == null)
+            return;
+        String source = "";
+        try {
+            Enumeration iter = msg.getMessage().getAllHeaders();
+            while (iter.hasMoreElements()) {
+                Header h = (Header) iter.nextElement();
+                source += h.getName() + " : " + h.getValue() + "\n";
+            }
+            source += IOUtils.toString(((IMAPMessage) msg.getMessage()).getRawInputStream(), ((IMAPMessage) msg.getMessage()).getEncoding());
+        } catch (Exception e) {
+            logger.error("Unable to parse message", e);
+        }
+        StageHelper.<MailSourceWindow>openWindow("w_source.fxml", "Source", false).getValue().loadMailSource(source);
+    }
+
+    public void showAttachments(ActionEvent actionEvent) {
 
     }
 

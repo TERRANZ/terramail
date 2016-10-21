@@ -1,9 +1,8 @@
 package ru.terra.mail.storage.entity;
 
-import javax.mail.Folder;
-
 import org.codehaus.jackson.annotate.JsonIgnore;
 
+import javax.mail.Folder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -22,7 +21,8 @@ public class MailFolder {
     private Boolean deleted;
 
     public MailFolder() {
-        guid = UUID.randomUUID().toString();
+        this.guid = UUID.randomUUID().toString();
+        this.childFolders = new ArrayList<>();
     }
 
     public MailFolder(Folder folder) {
