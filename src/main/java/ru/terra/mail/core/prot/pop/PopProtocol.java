@@ -4,6 +4,8 @@ import ru.terra.mail.core.AbstractMailProtocol;
 import ru.terra.mail.storage.entity.MailFolder;
 
 import javax.mail.MessagingException;
+
+import java.security.GeneralSecurityException;
 import java.util.List;
 
 /**
@@ -11,13 +13,10 @@ import java.util.List;
  */
 public class PopProtocol extends AbstractMailProtocol {
 
-    @Override
-    public void login(String user, String pass, String server) throws MessagingException {
+	@Override
+	public void login(String user, String pass, String server) throws MessagingException, GeneralSecurityException {
+		// TODO Auto-generated method stub
+		
+	}
 
-    }
-
-    @Override
-    public List<MailFolder> listFolders() throws MessagingException {
-        return null;
-    }
 }

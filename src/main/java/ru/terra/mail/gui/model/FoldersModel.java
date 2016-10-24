@@ -1,5 +1,7 @@
 package ru.terra.mail.gui.model;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.scene.control.TreeItem;
 import ru.terra.mail.gui.controller.beans.FoldersTreeItem;
 import ru.terra.mail.storage.entity.MailFolder;
@@ -37,9 +39,9 @@ public class FoldersModel extends AbstractModel<MailFolder> {
         return treeRoot;
     }
 
-    public List<MailFolder> getFolders() {
-        List<MailFolder> storedFolders = storage.getRootFolders();
-        List<MailFolder> serverFolders = null;
+    public ObservableList<MailFolder> getFolders() {
+    	ObservableList<MailFolder> storedFolders = storage.getRootFolders();
+    	ObservableList<MailFolder> serverFolders = null;
         boolean loggedIn = false;
         try {
             performLogin();
@@ -65,9 +67,9 @@ public class FoldersModel extends AbstractModel<MailFolder> {
         return ret;
     }
 
-    protected List<MailFolder> merge(List<MailFolder> storedFolders, List<MailFolder> serverFolders) {
+    protected ObservableList<MailFolder> merge(ObservableList<MailFolder> storedFolders, ObservableList<MailFolder> serverFolders) {
         if (storedFolders == null) {
-            storedFolders = new ArrayList<>();
+            storedFolders = FXCollections.observableArrayList();
             storedFolders.addAll(serverFolders);
         } else {
             Map<String, MailFolder> serverFoldersMap = new HashMap<>();
