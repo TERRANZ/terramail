@@ -5,6 +5,8 @@ import org.codehaus.jackson.annotate.JsonIgnore;
 import ru.terra.mail.storage.db.entity.FolderEntity;
 
 import javax.mail.Folder;
+import javax.mail.MessagingException;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -33,6 +35,11 @@ public class MailFolder {
 		this.childFolders = new ArrayList<>();
 		this.guid = UUID.randomUUID().toString();
 		this.folder = folder;
+		try {
+			this.unreadMessages = folder.getUnreadMessageCount();
+		} catch (MessagingException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public MailFolder(FolderEntity f) {
@@ -41,6 +48,7 @@ public class MailFolder {
 		this.childFolders = new ArrayList<>();
 		this.guid = UUID.randomUUID().toString();
 		this.deleted = f.getDeleted();
+		this.unreadMessages = f.getUnreadMessages();
 	}
 
 	public String getGuid() {

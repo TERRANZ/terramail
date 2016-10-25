@@ -3,12 +3,15 @@ package ru.terra.mail.storage;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import ru.terra.mail.storage.db.controllers.FoldersController;
+import ru.terra.mail.storage.db.controllers.MessagesController;
 import ru.terra.mail.storage.db.entity.FolderEntity;
+import ru.terra.mail.storage.db.entity.MessageEntity;
 import ru.terra.mail.storage.domain.MailFolder;
 import ru.terra.mail.storage.domain.MailMessage;
 
@@ -18,6 +21,7 @@ import ru.terra.mail.storage.domain.MailMessage;
 public class Storage {
 
 	private FoldersController foldersController = new FoldersController();
+	private MessagesController messagesController = new MessagesController();
 
 	public ObservableList<MailFolder> getRootFolders() throws Exception {
 		Map<String, MailFolder> foldersMap = new HashMap<>();
@@ -36,6 +40,8 @@ public class Storage {
 			} else
 				inbox = foldersMap.get(fe.getFullName());
 		}
+		if (inbox == null)
+			return FXCollections.emptyObservableList();
 		return FXCollections.observableArrayList(inbox);
 	}
 
@@ -46,6 +52,9 @@ public class Storage {
 				if (folderEntity == null) {
 					folderEntity = new FolderEntity(f, -1);
 					foldersController.create(folderEntity);
+				} else {
+					folderEntity.setUnreadMessages(f.getUnreadMessages());
+					foldersController.update(folderEntity);
 				}
 				storeFolders(f.getChildFolders(), folderEntity.getId());
 			} catch (Exception e) {
@@ -61,6 +70,9 @@ public class Storage {
 				if (folderEntity == null) {
 					folderEntity = new FolderEntity(f, parentId);
 					foldersController.create(folderEntity);
+				} else {
+					folderEntity.setUnreadMessages(f.getUnreadMessages());
+					foldersController.update(folderEntity);
 				}
 				storeFolders(f.getChildFolders(), folderEntity.getId());
 			} catch (Exception e) {
@@ -70,13 +82,24 @@ public class Storage {
 	}
 
 	public ObservableList<MailMessage> getFolderMessages(MailFolder mailFolder) {
-		return FXCollections.emptyObservableList();
+		return FXCollections.observableArrayList(
+				messagesController.findByFolderId(foldersController.findByFullName(mailFolder.getFullName()).getId())
+						.stream().map(m -> new MailMessage(m, mailFolder)).collect(Collectors.toList()));
 	}
 
 	public void storeFolderMessages(MailFolder mailFolder, List<MailMessage> messages) {
+		Integer parentId = foldersController.findByFullName(mailFolder.getFullName()).getId();
+		messages.stream().map(m -> new MessageEntity(m, parentId)).forEach(m -> {
+			try {
+				messagesController.create(m);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		});
 	}
 
 	public Integer countMessages(MailFolder mailFolder) {
-		return 0;
+		return messagesController.findByFolderId(foldersController.findByFullName(mailFolder.getFullName()).getId())
+				.size();
 	}
 }

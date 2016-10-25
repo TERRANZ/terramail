@@ -2,6 +2,8 @@ package ru.terra.mail.storage.domain;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
 
+import ru.terra.mail.storage.db.entity.MessageEntity;
+
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import java.util.ArrayList;
@@ -14,106 +16,116 @@ import java.util.UUID;
  */
 public class MailMessage {
 
-    private Date createDate;
-    private String subject;
-    private String from;
-    private String to;
-    private String messageBody;
-    private List<MailMessageAttachment> attachments;
-    private String guid;
-    @JsonIgnore
-    private MailFolder folder;
-    @JsonIgnore
-    private Message message;
+	private Date createDate;
+	private String subject;
+	private String from;
+	private String to;
+	private String messageBody;
+	private List<MailMessageAttachment> attachments;
+	private String guid;
+	@JsonIgnore
+	private MailFolder folder;
+	@JsonIgnore
+	private Message message;
 
-    public MailMessage() {
-        guid = UUID.randomUUID().toString();
-    }
+	public MailMessage() {
+		guid = UUID.randomUUID().toString();
+	}
 
-    public MailMessage(Message msg, MailFolder mailFolder) {
-        this.guid = UUID.randomUUID().toString();
-        this.folder = mailFolder;
-        try {
-            this.subject = msg.getSubject();
-            this.createDate = msg.getReceivedDate();
-            this.from = msg.getFrom()[0].toString();
-            this.to = msg.getRecipients(Message.RecipientType.TO)[0].toString();
-        } catch (MessagingException e) {
-            e.printStackTrace();
-        }
-        this.message = msg;
-        this.attachments = new ArrayList<>();
-    }
+	public MailMessage(MessageEntity me, MailFolder mf) {
+		this.guid = UUID.randomUUID().toString();
+		this.folder = mf;
+		this.subject = me.getSubject();
+		this.createDate = me.getCreateDate();
+		this.from = me.getFrom();
+		this.to = me.getTo();
+		this.messageBody = me.getMessageBody();
+	}
 
-    public MailFolder getFolder() {
-        return folder;
-    }
+	public MailMessage(Message msg, MailFolder mailFolder) {
+		this.guid = UUID.randomUUID().toString();
+		this.folder = mailFolder;
+		try {
+			this.subject = msg.getSubject();
+			this.createDate = msg.getReceivedDate();
+			this.from = msg.getFrom()[0].toString();
+			this.to = msg.getRecipients(Message.RecipientType.TO)[0].toString();
+		} catch (MessagingException e) {
+			e.printStackTrace();
+		}
+		this.message = msg;
+		this.attachments = new ArrayList<>();
+	}
 
-    public void setFolder(MailFolder folder) {
-        this.folder = folder;
-    }
+	public MailFolder getFolder() {
+		return folder;
+	}
 
-    public Date getCreateDate() {
-        return createDate;
-    }
+	public void setFolder(MailFolder folder) {
+		this.folder = folder;
+	}
 
-    public void setCreateDate(Date createDate) {
-        this.createDate = createDate;
-    }
+	public Date getCreateDate() {
+		return createDate;
+	}
 
-    public String getSubject() {
-        return subject;
-    }
+	public void setCreateDate(Date createDate) {
+		this.createDate = createDate;
+	}
 
-    public void setSubject(String subject) {
-        this.subject = subject;
-    }
+	public String getSubject() {
+		return subject;
+	}
 
-    public String getFrom() {
-        return from;
-    }
+	public void setSubject(String subject) {
+		this.subject = subject;
+	}
 
-    public void setFrom(String from) {
-        this.from = from;
-    }
+	public String getFrom() {
+		return from;
+	}
 
-    public String getTo() {
-        return to;
-    }
+	public void setFrom(String from) {
+		this.from = from;
+	}
 
-    public void setTo(String to) {
-        this.to = to;
-    }
+	public String getTo() {
+		return to;
+	}
 
-    public String getMessageBody() {
-        return messageBody;
-    }
+	public void setTo(String to) {
+		this.to = to;
+	}
 
-    public void setMessageBody(String messageBody) {
-        this.messageBody = messageBody;
-    }
+	public String getMessageBody() {
+		return messageBody;
+	}
 
-    public String getGuid() {
-        return guid;
-    }
+	public void setMessageBody(String messageBody) {
+		this.messageBody = messageBody;
+	}
 
-    public void setGuid(String guid) {
-        this.guid = guid;
-    }
+	public String getGuid() {
+		return guid;
+	}
 
-    public Message getMessage() {
-        return message;
-    }
+	public void setGuid(String guid) {
+		this.guid = guid;
+	}
 
-    public void setMessage(Message message) {
-        this.message = message;
-    }
+	public Message getMessage() {
+		return message;
+	}
 
-    public List<MailMessageAttachment> getAttachments() {
-        return attachments;
-    }
+	public void setMessage(Message message) {
+		this.message = message;
+	}
 
-    public void setAttachments(List<MailMessageAttachment> attachments) {
-        this.attachments = attachments;
-    }
+	public List<MailMessageAttachment> getAttachments() {
+		return attachments;
+	}
+
+	public void setAttachments(List<MailMessageAttachment> attachments) {
+		this.attachments = attachments;
+	}
 }
