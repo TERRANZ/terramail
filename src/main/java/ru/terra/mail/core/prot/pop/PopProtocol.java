@@ -1,7 +1,7 @@
 package ru.terra.mail.core.prot.pop;
 
 import ru.terra.mail.core.AbstractMailProtocol;
-import ru.terra.mail.storage.entity.MailFolder;
+import ru.terra.mail.storage.domain.MailFolder;
 
 import javax.mail.MessagingException;
 

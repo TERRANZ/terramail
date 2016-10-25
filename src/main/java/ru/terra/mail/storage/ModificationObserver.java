@@ -11,8 +11,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javafx.collections.ObservableList;
-import ru.terra.mail.storage.entity.MailFolder;
-import ru.terra.mail.storage.entity.MailMessage;
+import ru.terra.mail.storage.domain.MailFolder;
+import ru.terra.mail.storage.domain.MailMessage;
 
 public class ModificationObserver {
 	private Logger logger = LoggerFactory.getLogger(this.getClass());

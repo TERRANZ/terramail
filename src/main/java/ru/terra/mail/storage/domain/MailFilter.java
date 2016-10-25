@@ -1,4 +1,4 @@
-package ru.terra.mail.storage.entity;
+package ru.terra.mail.storage.domain;
 
 /**
  * Created by terranz on 18.10.16.

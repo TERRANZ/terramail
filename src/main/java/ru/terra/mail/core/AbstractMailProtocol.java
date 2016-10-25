@@ -1,13 +1,12 @@
 package ru.terra.mail.core;
 
-import ru.terra.mail.storage.entity.MailFolder;
-
 import javax.mail.Folder;
 import javax.mail.MessagingException;
 import javax.mail.Store;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import ru.terra.mail.storage.domain.MailFolder;
 
 import java.security.GeneralSecurityException;
 import java.util.Arrays;

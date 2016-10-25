@@ -5,9 +5,9 @@ import org.apache.commons.io.IOUtils;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import ru.terra.mail.storage.ModificationObserver;
-import ru.terra.mail.storage.entity.MailFolder;
-import ru.terra.mail.storage.entity.MailMessage;
-import ru.terra.mail.storage.entity.MailMessageAttachment;
+import ru.terra.mail.storage.domain.MailFolder;
+import ru.terra.mail.storage.domain.MailMessage;
+import ru.terra.mail.storage.domain.MailMessageAttachment;
 
 import javax.activation.DataHandler;
 import javax.mail.BodyPart;

@@ -1,4 +1,4 @@
-package ru.terra.mail.storage.entity;
+package ru.terra.mail.storage.domain;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
 

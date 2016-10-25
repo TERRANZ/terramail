@@ -2,7 +2,7 @@ package ru.terra.mail.gui.controller.beans;
 
 import java.util.Date;
 
-import ru.terra.mail.storage.entity.MailMessage;
+import ru.terra.mail.storage.domain.MailMessage;
 
 /**
  * Created by terranz on 19.10.16.

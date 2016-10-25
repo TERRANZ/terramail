@@ -19,8 +19,8 @@ import ru.terra.mail.gui.controller.beans.MessagesTableItem;
 import ru.terra.mail.gui.core.AbstractUIController;
 import ru.terra.mail.gui.model.FoldersModel;
 import ru.terra.mail.gui.model.MessagesModel;
-import ru.terra.mail.storage.entity.MailFolder;
-import ru.terra.mail.storage.entity.MailMessage;
+import ru.terra.mail.storage.domain.MailFolder;
+import ru.terra.mail.storage.domain.MailMessage;
 
 import javax.mail.Header;
 import java.net.URL;
