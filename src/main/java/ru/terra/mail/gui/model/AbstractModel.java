@@ -15,12 +15,12 @@ import java.security.GeneralSecurityException;
  * Created by terranz on 19.10.16.
  */
 public abstract class AbstractModel<Bean> {
-	protected Logger logger = LoggerFactory.getLogger(this.getClass());
-	protected Storage storage = StorageSingleton.getInstance().getStorage();
-	protected AbstractMailProtocol protocol = Configuration.getInstance().getMailProtocol();
+    protected Logger logger = LoggerFactory.getLogger(this.getClass());
+    protected Storage storage = StorageSingleton.getInstance().getStorage();
+    protected AbstractMailProtocol protocol = Configuration.getInstance().getMailProtocol();
 
-	protected void performLogin() throws GeneralSecurityException, MessagingException {
-		protocol.login(StartUpParameters.getInstance().getUser(), StartUpParameters.getInstance().getPass(),
-				StartUpParameters.getInstance().getServ());
-	}
+    protected void performLogin() throws GeneralSecurityException, MessagingException {
+        protocol.login(StartUpParameters.getInstance().getUser(), StartUpParameters.getInstance().getPass(),
+                StartUpParameters.getInstance().getServ());
+    }
 }

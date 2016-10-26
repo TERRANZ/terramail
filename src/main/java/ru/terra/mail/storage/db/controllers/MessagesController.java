@@ -1,75 +1,73 @@
 package ru.terra.mail.storage.db.controllers;
 
-import java.util.List;
+import ru.terra.mail.storage.db.entity.MessageEntity;
+import ru.terra.server.db.controllers.AbstractJpaController;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
-
-import ru.terra.mail.storage.db.entity.FolderEntity;
-import ru.terra.mail.storage.db.entity.MessageEntity;
-import ru.terra.server.db.controllers.AbstractJpaController;
+import java.util.List;
 
 public class MessagesController extends AbstractJpaController<MessageEntity> {
-	private EntityManager em = getEntityManager();
+    private EntityManager em = getEntityManager();
 
-	public MessagesController() {
-		super(MessageEntity.class);
-	}
+    public MessagesController() {
+        super(MessageEntity.class);
+    }
 
-	@Override
-	public void create(MessageEntity arg0) throws Exception {
-		EntityManager em = null;
-		try {
-			em = getEntityManager();
-			em.getTransaction().begin();
-			em.persist(arg0);
-			em.getTransaction().commit();
-		} finally {
+    @Override
+    public void create(MessageEntity arg0) throws Exception {
+        EntityManager em = null;
+        try {
+            em = getEntityManager();
+            em.getTransaction().begin();
+            em.persist(arg0);
+            em.getTransaction().commit();
+        } finally {
 
-		}
-	}
+        }
+    }
 
-	@Override
-	public void delete(Integer id) throws Exception {
-		MessageEntity entity = get(id);
-		if (entity != null) {
-			em = getEntityManager();
-			em.getTransaction().begin();
-			em.remove(entity);
-			em.getTransaction().commit();
-		}
-	}
+    @Override
+    public void delete(Integer id) throws Exception {
+        MessageEntity entity = get(id);
+        if (entity != null) {
+            em = getEntityManager();
+            em.getTransaction().begin();
+            em.remove(entity);
+            em.getTransaction().commit();
+        }
+    }
 
-	@Override
-	public void update(MessageEntity arg0) throws Exception {
-		try {
-			em.getTransaction().begin();
-			arg0 = em.merge(arg0);
-			em.getTransaction().commit();
-		} catch (Exception ex) {
-			String msg = ex.getLocalizedMessage();
-			if (msg == null || msg.length() == 0) {
-				Integer id = arg0.getId();
-				if (get(id) == null) {
-				}
-			}
-			throw ex;
-		} finally {
-		}
-	}
+    @Override
+    public void update(MessageEntity arg0) throws Exception {
+        try {
+            em.getTransaction().begin();
+            arg0 = em.merge(arg0);
+            em.getTransaction().commit();
+        } catch (Exception ex) {
+            String msg = ex.getLocalizedMessage();
+            if (msg == null || msg.length() == 0) {
+                Integer id = arg0.getId();
+                if (get(id) == null) {
+                }
+            }
+            throw ex;
+        } finally {
+        }
+    }
 
-	public List<MessageEntity> findByFolderId(Integer folderId) {
-		EntityManager em = getEntityManager();
-		try {
-			Query q = em.createNamedQuery("MessageEntity.findByFolderId", MessageEntity.class).setParameter("folderId",
-					folderId);
-			return q.getResultList();
-		} catch (NoResultException e) {
-			return null;
-		} finally {
+    public List<MessageEntity> findByFolderId(Integer folderId) {
+        EntityManager em = getEntityManager();
+        try {
+            Query q = em.createNamedQuery("MessageEntity.findByFolderId", MessageEntity.class).setParameter("folderId",
+                    folderId);
+            return q.getResultList();
+        } catch (NoResultException e) {
+            return null;
+        } finally {
 
-		}
-	}
+        }
+    }
 
 }
