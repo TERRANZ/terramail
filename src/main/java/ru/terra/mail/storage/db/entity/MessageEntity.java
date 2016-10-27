@@ -10,7 +10,8 @@ import java.util.Date;
 @Entity
 @XmlRootElement
 @NamedQueries({
-        @NamedQuery(name = "MessageEntity.findByFolderId", query = "SELECT f FROM MessageEntity f WHERE f.folderId = :folderId")})
+        @NamedQuery(name = "MessageEntity.findByFolderId", query = "SELECT f FROM MessageEntity f WHERE f.folderId = :folderId"),
+        @NamedQuery(name = "MessageEntity.findByCreateDate", query = "SELECT f FROM MessageEntity f WHERE f.createDate = :createDate")})
 public class MessageEntity implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -96,5 +97,11 @@ public class MessageEntity implements Serializable {
     public void setFolderId(Integer folderId) {
         this.folderId = folderId;
     }
+
+	@Override
+	public String toString() {
+		return "MessageEntity [id=" + id + ", createDate=" + createDate + ", subject=" + subject + ", from=" + from
+				+ ", to=" + to + ", messageBody=" + messageBody + ", folderId=" + folderId + "]";
+	}
 
 }

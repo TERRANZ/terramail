@@ -14,57 +14,59 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 public class ModificationObserver {
-    private static ModificationObserver instance = new ModificationObserver();
-    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
-    private List<ScheduledFuture<?>> checks = new ArrayList<>();
-    private Storage storage = StorageSingleton.getInstance().getStorage();
+	private static ModificationObserver instance = new ModificationObserver();
+	private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+	private Logger logger = LoggerFactory.getLogger(this.getClass());
+	private List<ScheduledFuture<?>> checks = new ArrayList<>();
+	private Storage storage = StorageSingleton.getInstance().getStorage();
 
-    private ModificationObserver() {
-    }
+	private ModificationObserver() {
+	}
 
-    public static ModificationObserver getInstance() {
-        return instance;
-    }
+	public static ModificationObserver getInstance() {
+		return instance;
+	}
 
-    public Integer startObserve(ObservableList<MailMessage> messages, MailFolder mailFolder) {
-        ScheduledFuture<?> future = scheduler.scheduleAtFixedRate(new ScheduledChecking(messages, mailFolder), 0, 5,
-                TimeUnit.SECONDS);
-        checks.add(future);
-        return checks.indexOf(future);
-    }
+	public Integer startObserve(ObservableList<MailMessage> messages, MailFolder mailFolder) {
+		ScheduledFuture<?> future = scheduler.scheduleAtFixedRate(new ScheduledChecking(messages, mailFolder), 0, 5,
+				TimeUnit.SECONDS);
+		checks.forEach(sf -> sf.cancel(true));//TODO: hmm
+		checks.clear();
+		checks.add(future);
+		return checks.indexOf(future);
+	}
 
-    public void stopObserve(Integer observerId) {
-        logger.info("Stopping observer " + observerId);
-        ScheduledFuture<?> future = checks.get(observerId);
-        if (future != null) {
-            if (!future.isCancelled() && !future.isDone()) {
-                future.cancel(true);
-            }
-        }
-    }
+	public void stopObserve(Integer observerId) {
+		logger.info("Stopping observer " + observerId);
+		ScheduledFuture<?> future = checks.get(observerId);
+		if (future != null) {
+			if (!future.isCancelled() && !future.isDone()) {
+				future.cancel(true);
+			}
+		}
+	}
 
-    private class ScheduledChecking implements Runnable {
-        private ObservableList<MailMessage> messages;
-        private MailFolder mailFolder;
+	private class ScheduledChecking implements Runnable {
+		private ObservableList<MailMessage> messages;
+		private MailFolder mailFolder;
 
-        public ScheduledChecking(ObservableList<MailMessage> messages, MailFolder mailFolder) {
-            super();
-            this.messages = messages;
-            this.mailFolder = mailFolder;
-        }
+		public ScheduledChecking(ObservableList<MailMessage> messages, MailFolder mailFolder) {
+			super();
+			this.messages = messages;
+			this.mailFolder = mailFolder;
+		}
 
-        @Override
-        public void run() {
-            logger.info("Checking folder " + mailFolder.getFullName() + " for modifications");
-            Integer messagesInDb = storage.countMessages(mailFolder);
-            if (messagesInDb != messages.size()) {
-                logger.info("Modifications: in db: " + messagesInDb + " <> " + messages.size());
-                messages.clear();
-                messages.addAll(storage.getFolderMessages(mailFolder));
-            } else {
-                logger.info("No modifications");
-            }
-        }
-    }
+		@Override
+		public void run() {
+			logger.info("Checking folder " + mailFolder.getFullName() + " for modifications");
+			Integer messagesInDb = storage.countMessages(mailFolder);
+			if (messagesInDb != messages.size()) {
+				logger.info("Modifications: in db: " + messagesInDb + " <> " + messages.size());
+				messages.clear();
+				messages.addAll(storage.getFolderMessages(mailFolder));
+			} else {
+				logger.info("No modifications");
+			}
+		}
+	}
 }

@@ -12,7 +12,6 @@ import ru.terra.mail.gui.StageHelper;
  */
 public class Main extends Application {
     public static void main(String... args) {
-        BasicConfigurator.configure();
         new JCommander(StartUpParameters.getInstance(), args);
         launch(args);
     }
