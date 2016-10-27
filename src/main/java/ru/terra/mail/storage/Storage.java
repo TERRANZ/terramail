@@ -2,6 +2,8 @@ package ru.terra.mail.storage;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.terra.mail.storage.db.controllers.FoldersController;
 import ru.terra.mail.storage.db.controllers.MessagesController;
 import ru.terra.mail.storage.db.entity.FolderEntity;
@@ -13,9 +15,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Created by terranz on 18.10.16.
@@ -93,18 +92,18 @@ public class Storage {
     public void storeFolderMessages(MailFolder mailFolder, List<MailMessage> messages) {
         Integer parentId = foldersController.findByFullName(mailFolder.getFullName()).getId();
         messages.stream().map(m -> new MessageEntity(m, parentId)).forEach(m -> {
-        	logger.info("Storing new message "+ m.toString());
-			try {
-				if (!messagesController.isExists(m.getCreateDate()))
-					messagesController.create(m);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		});
-	}
+            logger.info("Storing new message " + m.toString());
+            try {
+                if (!messagesController.isExists(m.getCreateDate()))
+                    messagesController.create(m);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }
 
-	public Integer countMessages(MailFolder mailFolder) {
-		return messagesController.findByFolderId(foldersController.findByFullName(mailFolder.getFullName()).getId())
-				.size();
-	}
+    public Integer countMessages(MailFolder mailFolder) {
+        return messagesController.findByFolderId(foldersController.findByFullName(mailFolder.getFullName()).getId())
+                .size();
+    }
 }

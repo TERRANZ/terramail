@@ -3,7 +3,6 @@ package ru.terra.mail;
 import com.beust.jcommander.JCommander;
 import javafx.application.Application;
 import javafx.stage.Stage;
-import org.apache.log4j.BasicConfigurator;
 import ru.terra.mail.config.StartUpParameters;
 import ru.terra.mail.gui.StageHelper;
 

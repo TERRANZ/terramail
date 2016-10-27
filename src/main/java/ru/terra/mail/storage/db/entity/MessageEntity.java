@@ -98,10 +98,10 @@ public class MessageEntity implements Serializable {
         this.folderId = folderId;
     }
 
-	@Override
-	public String toString() {
-		return "MessageEntity [id=" + id + ", createDate=" + createDate + ", subject=" + subject + ", from=" + from
-				+ ", to=" + to + ", messageBody=" + messageBody + ", folderId=" + folderId + "]";
-	}
+    @Override
+    public String toString() {
+        return "MessageEntity [id=" + id + ", createDate=" + createDate + ", subject=" + subject + ", from=" + from
+                + ", to=" + to + ", messageBody=" + messageBody + ", folderId=" + folderId + "]";
+    }
 
 }

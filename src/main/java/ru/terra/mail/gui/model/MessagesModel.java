@@ -29,7 +29,7 @@ public class MessagesModel extends AbstractModel<MailMessage> {
         return storage.getFolderMessages(folder);
     }
 
-    public ObservableList<MailMessage> getFolderMessages(MailFolder folder,ObservableList<MailMessage> stored) {        
+    public ObservableList<MailMessage> getFolderMessages(MailFolder folder, ObservableList<MailMessage> stored) {
         ModificationObserver.getInstance().startObserve(stored, folder);
         // if (stored == null || stored.size() == 0) {
         // stored = loadFromFolder(folder);
