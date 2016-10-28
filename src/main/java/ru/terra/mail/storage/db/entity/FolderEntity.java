@@ -9,76 +9,55 @@ import java.io.Serializable;
 @Entity
 @XmlRootElement
 @NamedQueries({
-        @NamedQuery(name = "FolderEntity.findByFullName", query = "SELECT f FROM FolderEntity f WHERE f.fullName = :fullName")})
-public class FolderEntity implements Serializable {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Basic(optional = false)
-    @Column(name = "id", nullable = false)
-    private Integer id;
-    private Boolean deleted;
-    private String name;
-    private String fullName;
-    private Integer unreadMessages = 0;
-    private Integer parentFolderId;
+		@NamedQuery(name = "FolderEntity.findByFullName", query = "SELECT f FROM FolderEntity f WHERE f.fullName = :fullName") })
+public class FolderEntity extends AbstractEntity {
 
-    public FolderEntity() {
-    }
+	private String name;
+	private String fullName;
+	private Integer unreadMessages = 0;
+	private Integer parentFolderId;
 
-    public FolderEntity(MailFolder f, Integer parent) {
-        this.name = f.getName();
-        this.fullName = f.getFullName();
-        this.deleted = f.getDeleted();
-        this.unreadMessages = f.getUnreadMessages();
-        this.parentFolderId = parent;
-    }
+	public FolderEntity() {
+	}
 
-    public Integer getId() {
-        return id;
-    }
+	public FolderEntity(MailFolder f, Integer parent) {
+		this.name = f.getName();
+		this.fullName = f.getFullName();
+		this.deleted = f.getDeleted();
+		this.unreadMessages = f.getUnreadMessages();
+		this.parentFolderId = parent;
+	}
 
-    public void setId(Integer id) {
-        this.id = id;
-    }
+	public String getName() {
+		return name;
+	}
 
-    public Boolean getDeleted() {
-        return deleted;
-    }
+	public void setName(String name) {
+		this.name = name;
+	}
 
-    public void setDeleted(Boolean deleted) {
-        this.deleted = deleted;
-    }
+	public String getFullName() {
+		return fullName;
+	}
 
-    public String getName() {
-        return name;
-    }
+	public void setFullName(String fullName) {
+		this.fullName = fullName;
+	}
 
-    public void setName(String name) {
-        this.name = name;
-    }
+	public Integer getUnreadMessages() {
+		return unreadMessages;
+	}
 
-    public String getFullName() {
-        return fullName;
-    }
+	public void setUnreadMessages(Integer unreadMessages) {
+		this.unreadMessages = unreadMessages;
+	}
 
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
-    }
+	public Integer getParentFolderId() {
+		return parentFolderId;
+	}
 
-    public Integer getUnreadMessages() {
-        return unreadMessages;
-    }
-
-    public void setUnreadMessages(Integer unreadMessages) {
-        this.unreadMessages = unreadMessages;
-    }
-
-    public Integer getParentFolderId() {
-        return parentFolderId;
-    }
-
-    public void setParentFolderId(Integer parentFolderId) {
-        this.parentFolderId = parentFolderId;
-    }
+	public void setParentFolderId(Integer parentFolderId) {
+		this.parentFolderId = parentFolderId;
+	}
 
 }
