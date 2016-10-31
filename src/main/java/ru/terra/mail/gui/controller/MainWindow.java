@@ -162,7 +162,10 @@ public class MainWindow extends AbstractUIController {
     }
 
     public void showSource(ActionEvent actionEvent) {
-        MailMessage msg = (MailMessage) wvMailViewer.getUserData();
+        MessagesTableItem selected = tvMessages.getSelectionModel().getSelectedItem();
+        if (selected == null)
+            return;
+        MailMessage msg = selected.getMessage();
         if (msg.getMessage() == null)
             return;
         String source = "";
