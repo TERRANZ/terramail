@@ -82,7 +82,6 @@ public class MainWindow extends AbstractUIController {
             if (event.getClickCount() == 2) {
                 MessagesTableItem item = tvMessages.getSelectionModel().getSelectedItem();
                 if (item != null) {
-                    String body = "";
                     MailMessage msg = item.getMessage();
                     wvMailViewer.setUserData(msg);
                     if (msg.getMessageBody() != null)
