@@ -3,10 +3,12 @@ package ru.terra.mail.storage.domain;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import ru.terra.mail.storage.db.entity.MessageEntity;
 
+import javax.mail.Header;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.UUID;
 
@@ -26,6 +28,7 @@ public class MailMessage {
     private MailFolder folder;
     @JsonIgnore
     private Message message;
+    private String headers;
 
     public MailMessage() {
         guid = UUID.randomUUID().toString();
@@ -51,6 +54,12 @@ public class MailMessage {
             this.from = msg.getFrom()[0].toString();
             if (msg.getRecipients(Message.RecipientType.TO) != null && msg.getRecipients(Message.RecipientType.TO).length > 0)
                 this.to = msg.getRecipients(Message.RecipientType.TO)[0].toString();
+            Enumeration iter = msg.getAllHeaders();
+            headers = "";
+            while (iter.hasMoreElements()) {
+                Header h = (Header) iter.nextElement();
+                headers += h.getName() + " : " + h.getValue() + "\n";
+            }
         } catch (MessagingException e) {
             e.printStackTrace();
         }
@@ -129,4 +138,12 @@ public class MailMessage {
     public void setAttachments(List<MailMessageAttachment> attachments) {
         this.attachments = attachments;
     }
+
+	public String getHeaders() {
+		return headers;
+	}
+
+	public void setHeaders(String headers) {
+		this.headers = headers;
+	}      
 }

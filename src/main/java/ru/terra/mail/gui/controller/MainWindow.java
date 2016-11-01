@@ -164,23 +164,8 @@ public class MainWindow extends AbstractUIController {
     public void showSource(ActionEvent actionEvent) {
         MessagesTableItem selected = tvMessages.getSelectionModel().getSelectedItem();
         if (selected == null)
-            return;
-        MailMessage msg = selected.getMessage();
-        if (msg.getMessage() == null)
-            return;
-        String source = "";
-        try {
-            Enumeration iter = msg.getMessage().getAllHeaders();
-            while (iter.hasMoreElements()) {
-                Header h = (Header) iter.nextElement();
-                source += h.getName() + " : " + h.getValue() + "\n";
-            }
-            source += IOUtils.toString(((IMAPMessage) msg.getMessage()).getRawInputStream(),
-                    ((IMAPMessage) msg.getMessage()).getEncoding());
-        } catch (Exception e) {
-            logger.error("Unable to parse message", e);
-        }
-        StageHelper.<MailSourceWindow>openWindow("w_source.fxml", "Source", false).getValue().loadMailSource(source);
+            return;        
+        StageHelper.<MailSourceWindow>openWindow("w_source.fxml", "Source", false).getValue().loadMailSource(selected.getMessage().getHeaders());
     }
 
     public void showAttachments(ActionEvent actionEvent) {
