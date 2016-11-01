@@ -29,48 +29,7 @@ public class MessagesModel extends AbstractModel<MailMessage> {
 
 	public ObservableList<MailMessage> getFolderMessages(MailFolder folder, ObservableList<MailMessage> stored) {
 		ModificationObserver.getInstance().startObserve(stored, folder);
-		loadFromFolder(folder);
+		storage.loadFromFolder(folder);
 		return stored;
-	}
-
-	private MailMessage messageExists(long date, List<MailMessage> messages) {
-		for (MailMessage m : messages)
-			if (m.getCreateDate().getTime() == date)
-				return m;
-		return null;
-	}
-
-	private void loadFromFolder(MailFolder folder) {
-		if (folder.getFolder() == null)
-			return;
-		try {
-			if (!folder.getFolder().isOpen())
-				folder.getFolder().open(Folder.READ_ONLY);
-			storage.storeFolderMessages(folder, Arrays.stream(folder.getFolder().getMessages()).map(m -> {
-				MailMessage msg = new MailMessage(m, folder);
-				processMailMessage(msg);
-				return msg;
-			}).collect(Collectors.toList()));
-		} catch (Exception e) {
-			logger.error("Unable to load messages from server", e);
-		}
-	}
-
-	private void processMailMessage(MailMessage mm) {
-		Message msg = mm.getMessage();
-		try {
-			if (msg.getContent() instanceof MimeMultipart) {
-				MimeMultipart multipart = (MimeMultipart) msg.getContent();
-				for (int j = 0; j < multipart.getCount(); j++) {
-					BodyPart bodyPart = multipart.getBodyPart(j);
-					DataHandler handler = bodyPart.getDataHandler();
-					mm.getAttachments().add(new MailMessageAttachment(IOUtils.toByteArray(handler.getInputStream()),
-							handler.getContentType(), handler.getName()));
-				}
-			} else
-				mm.setMessageBody(msg.getContent().toString());
-		} catch (Exception e) {
-			logger.error("Unable to process mail message", e);
-		}
 	}
 }

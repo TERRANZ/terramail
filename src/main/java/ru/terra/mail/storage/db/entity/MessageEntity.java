@@ -24,6 +24,7 @@ public class MessageEntity extends AbstractEntity {
     @Column(name = "me_mb")
     private String messageBody;
     private Integer folderId;
+    private String headers;
 
     public MessageEntity() {
     }
@@ -35,6 +36,7 @@ public class MessageEntity extends AbstractEntity {
         this.to = m.getTo();
         this.messageBody = m.getMessageBody();
         this.folderId = folderId;
+        this.headers = m.getHeaders();
     }
 
     public Date getCreateDate() {
@@ -90,5 +92,13 @@ public class MessageEntity extends AbstractEntity {
         return "MessageEntity [id=" + id + ", createDate=" + createDate + ", subject=" + subject + ", from=" + from
                 + ", to=" + to + ", messageBody=" + messageBody + ", folderId=" + folderId + "]";
     }
+
+	public String getHeaders() {
+		return headers;
+	}
+
+	public void setHeaders(String headers) {
+		this.headers = headers;
+	}
 
 }

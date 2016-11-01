@@ -58,14 +58,14 @@ public class ModificationObserver {
 
         @Override
         public void run() {
-            logger.info("Checking folder " + mailFolder.getFullName() + " for modifications");
+//            logger.info("Checking folder " + mailFolder.getFullName() + " for modifications");
             Integer messagesInDb = storage.countMessages(mailFolder);
             if (messagesInDb != messages.size()) {
-                logger.info("Modifications: in db: " + messagesInDb + " <> " + messages.size());
+//                logger.info("Modifications: in db: " + messagesInDb + " <> " + messages.size());
                 messages.clear();
                 messages.addAll(storage.getFolderMessages(mailFolder));
             } else {
-                logger.info("No modifications");
+//                logger.info("No modifications");
             }
         }
     }
