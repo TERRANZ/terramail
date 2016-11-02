@@ -93,12 +93,12 @@ public class MessageEntity extends AbstractEntity {
                 + ", to=" + to + ", messageBody=" + messageBody + ", folderId=" + folderId + "]";
     }
 
-	public String getHeaders() {
-		return headers;
-	}
+    public String getHeaders() {
+        return headers;
+    }
 
-	public void setHeaders(String headers) {
-		this.headers = headers;
-	}
+    public void setHeaders(String headers) {
+        this.headers = headers;
+    }
 
 }

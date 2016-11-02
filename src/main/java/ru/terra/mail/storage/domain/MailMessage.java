@@ -2,17 +2,12 @@ package ru.terra.mail.storage.domain;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.slf4j.LoggerFactory;
-
 import ru.terra.mail.storage.db.entity.MessageEntity;
 
 import javax.mail.Header;
 import javax.mail.Message;
 import javax.mail.MessagingException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Created by terranz on 18.10.16.
@@ -49,7 +44,7 @@ public class MailMessage {
     }
 
     public MailMessage(Message msg, MailFolder mailFolder) {
-    	LoggerFactory.getLogger(this.getClass()).info("Generating mail message from transport message");
+        LoggerFactory.getLogger(this.getClass()).info("Generating mail message from transport message");
         this.guid = UUID.randomUUID().toString();
         this.folder = mailFolder;
         try {
@@ -143,11 +138,11 @@ public class MailMessage {
         this.attachments = attachments;
     }
 
-	public String getHeaders() {
-		return headers;
-	}
+    public String getHeaders() {
+        return headers;
+    }
 
-	public void setHeaders(String headers) {
-		this.headers = headers;
-	}      
+    public void setHeaders(String headers) {
+        this.headers = headers;
+    }
 }

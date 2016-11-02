@@ -1,6 +1,5 @@
 package ru.terra.mail.gui.controller;
 
-import com.sun.mail.imap.IMAPMessage;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
@@ -13,7 +12,6 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.web.WebView;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.terra.mail.gui.StageHelper;
@@ -25,10 +23,8 @@ import ru.terra.mail.gui.model.MessagesModel;
 import ru.terra.mail.storage.domain.MailFolder;
 import ru.terra.mail.storage.domain.MailMessage;
 
-import javax.mail.Header;
 import java.net.URL;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
@@ -163,7 +159,7 @@ public class MainWindow extends AbstractUIController {
     public void showSource(ActionEvent actionEvent) {
         MessagesTableItem selected = tvMessages.getSelectionModel().getSelectedItem();
         if (selected == null)
-            return;        
+            return;
         StageHelper.<MailSourceWindow>openWindow("w_source.fxml", "Source", false).getValue().loadMailSource(selected.getMessage().getHeaders());
     }
 
