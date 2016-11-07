@@ -5,6 +5,9 @@ import ru.terra.mail.gui.core.AbstractUIController;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+/**
+ * Created by terranz on 21.10.16.
+ */
 public class ConfigurationController extends AbstractUIController {
 
     @Override

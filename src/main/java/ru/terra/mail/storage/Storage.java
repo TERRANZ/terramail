@@ -20,6 +20,7 @@ import javax.mail.BodyPart;
 import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.internet.MimeMultipart;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -47,7 +48,7 @@ public class Storage {
         Map<String, MailFolder> foldersMap = new HashMap<>();
         MailFolder inbox = null;
         Map<Integer, FolderEntity> storedFoldersMap = new HashMap<>();
-        foldersController.list(true, -1, -1).stream().forEach(f -> {
+        foldersController.list(true, -1, -1).forEach(f -> {
             storedFoldersMap.put(f.getId(), f);
             foldersMap.put(f.getFullName(), new MailFolder(f));
         });
@@ -152,7 +153,7 @@ public class Storage {
             Arrays.stream(folder.getFolder().getMessages()).forEach(m -> {
                 service.submit(() -> {
                     MailMessage msg = new MailMessage(m, folder);
-                    processMailMessage(msg);
+                    processMailMessageAttachments(msg);
                     storeFolderMessage(msg);
                 });
             });
@@ -161,7 +162,7 @@ public class Storage {
         }
     }
 
-    private void processMailMessage(MailMessage mm) {
+    private void processMailMessageAttachments(MailMessage mm) {
         Message msg = mm.getMessage();
         try {
             if (msg.getContent() instanceof MimeMultipart) {
@@ -171,6 +172,9 @@ public class Storage {
                     DataHandler handler = bodyPart.getDataHandler();
                     mm.getAttachments().add(new MailMessageAttachment(IOUtils.toByteArray(handler.getInputStream()),
                             handler.getContentType(), handler.getName()));
+                }
+                if (msg.getContentType().startsWith("text/html") || msg.getContentType().startsWith("text/plain")) {
+                    mm.setMessageBody(IOUtils.toString(msg.getInputStream(), Charset.forName("UTF-8")));
                 }
             } else
                 mm.setMessageBody(msg.getContent().toString());

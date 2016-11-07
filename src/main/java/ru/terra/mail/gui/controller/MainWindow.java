@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
  */
 public class MainWindow extends AbstractUIController {
     @FXML
-    WebView wvMailViewer;
+    private WebView wvMailViewer;
     private Logger logger = LoggerFactory.getLogger(this.getClass());
     @FXML
     private TreeView<FoldersTreeItem> tvFolders;
@@ -59,23 +59,21 @@ public class MainWindow extends AbstractUIController {
 
     private void setColums() {
         colSubject.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getSubject()));
-        colDate.setCellFactory(param -> {
-            TableCell<MessagesTableItem, Date> cell = new TableCell<MessagesTableItem, Date>() {
-                @Override
-                protected void updateItem(Date item, boolean empty) {
-                    if (item != null && !empty)
-                        setText(messageDateFormat.format(item));
-                }
-            };
-            return cell;
+        colDate.setCellFactory(param -> new TableCell<MessagesTableItem, Date>() {
+            @Override
+            protected void updateItem(Date item, boolean empty) {
+                if (item != null && !empty)
+                    setText(messageDateFormat.format(item));
+            }
         });
         colDate.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getDate()));
-        colDate.setComparator((o1, o2) -> o1.compareTo(o2));
+        colDate.setComparator(Date::compareTo);
     }
 
     private void setMessagesTableSelectionEvents() {
         tvMessages.setOnMouseClicked(event -> {
             if (event.getClickCount() == 2) {
+                wvMailViewer.getEngine().loadContent("");
                 MessagesTableItem item = tvMessages.getSelectionModel().getSelectedItem();
                 if (item != null) {
                     MailMessage msg = item.getMessage();

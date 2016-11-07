@@ -2,6 +2,8 @@ package ru.terra.mail.core;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.terra.mail.storage.domain.MailFolder;
 
 import javax.mail.Folder;
@@ -15,6 +17,7 @@ import java.util.Arrays;
  */
 public abstract class AbstractMailProtocol {
     protected Store store;
+    protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public abstract void login(String user, String pass, String server)
             throws MessagingException, GeneralSecurityException;
@@ -25,7 +28,7 @@ public abstract class AbstractMailProtocol {
             try {
                 return getFolders(f);
             } catch (MessagingException e) {
-                e.printStackTrace();
+                logger.error("Unable to list folders", e);
             }
             return null;
         }).forEach(e -> ret.add(e));
@@ -39,7 +42,7 @@ public abstract class AbstractMailProtocol {
                 try {
                     mailFolder.getChildFolders().add(getFolders(f));
                 } catch (MessagingException e) {
-                    e.printStackTrace();
+                    logger.error("Unable to get folders", e);
                 }
             });
         }
