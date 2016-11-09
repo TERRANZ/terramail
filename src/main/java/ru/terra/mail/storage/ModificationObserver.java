@@ -28,7 +28,7 @@ public class ModificationObserver {
     }
 
     public Integer startObserve(ObservableList<MailMessage> messages, MailFolder mailFolder) {
-        ScheduledFuture<?> future = scheduler.scheduleAtFixedRate(new ScheduledChecking(messages, mailFolder), 0, 5,
+        ScheduledFuture<?> future = scheduler.scheduleAtFixedRate(new ScheduledChecking(messages, mailFolder), 0, 1,
                 TimeUnit.SECONDS);
         checks.forEach(sf -> sf.cancel(true));//TODO: hmm
         checks.clear();

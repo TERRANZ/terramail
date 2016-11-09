@@ -19,6 +19,7 @@ import javax.activation.DataHandler;
 import javax.mail.BodyPart;
 import javax.mail.Folder;
 import javax.mail.Message;
+import javax.mail.MessagingException;
 import javax.mail.internet.MimeMultipart;
 import java.nio.charset.Charset;
 import java.util.Arrays;
@@ -152,9 +153,15 @@ public class Storage {
                 folder.getFolder().open(Folder.READ_ONLY);
             Arrays.stream(folder.getFolder().getMessages()).forEach(m -> {
                 service.submit(() -> {
-                    MailMessage msg = new MailMessage(m, folder);
-                    processMailMessageAttachments(msg);
-                    storeFolderMessage(msg);
+                    try {
+                        if (!messagesController.isExists(m.getReceivedDate())) {
+                            MailMessage msg = new MailMessage(m, folder);
+                            processMailMessageAttachments(msg);
+                            storeFolderMessage(msg);
+                        }
+                    } catch (MessagingException e) {
+                        e.printStackTrace();
+                    }
                 });
             });
         } catch (Exception e) {
