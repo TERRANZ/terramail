@@ -83,7 +83,7 @@ public class MainWindow extends AbstractUIController {
                     else {
                         if (msg.getAttachments() != null && msg.getAttachments().size() > 0) {
                             msg.getAttachments().stream()
-                                    .filter(attachment -> attachment.getType().contains("text/plain"))
+                                    .filter(attachment -> attachment.getType().contains("text/html"))
                                     .forEach(attachment -> wvMailViewer.getEngine()
                                             .loadContent(new String(attachment.getBody())));
                         }
