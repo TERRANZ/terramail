@@ -6,6 +6,7 @@ import javafx.beans.Observable;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.ObservableSet;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
@@ -66,7 +67,14 @@ public class MainWindow extends AbstractUIController {
                     setText(messageDateFormat.format(item));
             }
         });
-        colDate.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getDate()));
+        colDate.setCellValueFactory(cellData -> {
+            try {
+                return new SimpleObjectProperty<>(cellData.getValue().getDate());
+            } catch (Exception e) {
+                logger.error("Error", e);
+            }
+            return new SimpleObjectProperty<>(new Date());
+        });
         colDate.setComparator(Date::compareTo);
     }
 
@@ -117,7 +125,7 @@ public class MainWindow extends AbstractUIController {
     private void showMessages(MailFolder mailFolder) {
         updateStatus(mailFolder.getFullName());
         updateStatus("Messages loading");
-        ObservableList<MailMessage> storedMessages = messagesModel.getStoredMessages(mailFolder);
+        ObservableSet<MailMessage> storedMessages = messagesModel.getStoredMessages(mailFolder);
         ObservableList<MessagesTableItem> displayItems = FXCollections.observableArrayList();
         if (storedMessages != null && storedMessages.size() > 0) {
             displayItems.addAll(storedMessages.stream().map(MessagesTableItem::new).collect(Collectors.toList()));
@@ -180,20 +188,20 @@ public class MainWindow extends AbstractUIController {
         }
     }
 
-    private class LoadMessagesService extends Service<ObservableList<MailMessage>> {
+    private class LoadMessagesService extends Service<ObservableSet<MailMessage>> {
         private MailFolder mailFolder;
-        private ObservableList<MailMessage> storedMessages;
+        private ObservableSet<MailMessage> storedMessages;
 
-        public LoadMessagesService(MailFolder mailFolder, ObservableList<MailMessage> displayedMessages) {
+        public LoadMessagesService(MailFolder mailFolder, ObservableSet<MailMessage> displayedMessages) {
             this.mailFolder = mailFolder;
             this.storedMessages = displayedMessages;
         }
 
         @Override
-        protected Task<ObservableList<MailMessage>> createTask() {
-            return new Task<ObservableList<MailMessage>>() {
+        protected Task<ObservableSet<MailMessage>> createTask() {
+            return new Task<ObservableSet<MailMessage>>() {
                 @Override
-                protected ObservableList<MailMessage> call() throws Exception {
+                protected ObservableSet<MailMessage> call() throws Exception {
                     return messagesModel.getFolderMessages(mailFolder, storedMessages);
                 }
             };

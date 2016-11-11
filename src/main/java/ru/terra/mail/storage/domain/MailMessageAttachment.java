@@ -9,14 +9,16 @@ public class MailMessageAttachment {
     private byte[] body;
     private String type;
     private String fileName;
+    private Boolean downloaded;
 
     public MailMessageAttachment() {
     }
 
-    public MailMessageAttachment(byte[] body, String type, String fileName) {
+    public MailMessageAttachment(byte[] body, String type, String fileName, Boolean downloaded) {
         this.body = body;
         this.type = type;
         this.fileName = fileName;
+        this.downloaded = downloaded;
     }
 
     public MailMessageAttachment(AttachmentEntity a) {

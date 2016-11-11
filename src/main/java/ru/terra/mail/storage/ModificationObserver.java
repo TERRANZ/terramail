@@ -1,6 +1,7 @@
 package ru.terra.mail.storage;
 
 import javafx.collections.ObservableList;
+import javafx.collections.ObservableSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.terra.mail.storage.domain.MailFolder;
@@ -27,7 +28,7 @@ public class ModificationObserver {
         return instance;
     }
 
-    public Integer startObserve(ObservableList<MailMessage> messages, MailFolder mailFolder) {
+    public Integer startObserve(ObservableSet<MailMessage> messages, MailFolder mailFolder) {
         ScheduledFuture<?> future = scheduler.scheduleAtFixedRate(new ScheduledChecking(messages, mailFolder), 0, 1,
                 TimeUnit.SECONDS);
         checks.forEach(sf -> sf.cancel(true));//TODO: hmm
@@ -36,21 +37,11 @@ public class ModificationObserver {
         return checks.indexOf(future);
     }
 
-    public void stopObserve(Integer observerId) {
-        logger.info("Stopping observer " + observerId);
-        ScheduledFuture<?> future = checks.get(observerId);
-        if (future != null) {
-            if (!future.isCancelled() && !future.isDone()) {
-                future.cancel(true);
-            }
-        }
-    }
-
     private class ScheduledChecking implements Runnable {
-        private ObservableList<MailMessage> messages;
+        private ObservableSet<MailMessage> messages;
         private MailFolder mailFolder;
 
-        public ScheduledChecking(ObservableList<MailMessage> messages, MailFolder mailFolder) {
+        public ScheduledChecking(ObservableSet<MailMessage> messages, MailFolder mailFolder) {
             super();
             this.messages = messages;
             this.mailFolder = mailFolder;
@@ -62,7 +53,6 @@ public class ModificationObserver {
             Integer messagesInDb = storage.countMessages(mailFolder);
             if (messagesInDb != messages.size()) {
 //                logger.info("Modifications: in db: " + messagesInDb + " <> " + messages.size());
-                messages.clear();
                 messages.addAll(storage.getFolderMessages(mailFolder));
             } else {
 //                logger.info("No modifications");

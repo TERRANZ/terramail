@@ -1,6 +1,7 @@
 package ru.terra.mail.gui.model;
 
 import javafx.collections.ObservableList;
+import javafx.collections.ObservableSet;
 import ru.terra.mail.storage.ModificationObserver;
 import ru.terra.mail.storage.domain.MailFolder;
 import ru.terra.mail.storage.domain.MailMessage;
@@ -10,11 +11,11 @@ import ru.terra.mail.storage.domain.MailMessage;
  */
 public class MessagesModel extends AbstractModel<MailMessage> {
 
-    public ObservableList<MailMessage> getStoredMessages(MailFolder folder) {
+    public ObservableSet<MailMessage> getStoredMessages(MailFolder folder) {
         return storage.getFolderMessages(folder);
     }
 
-    public ObservableList<MailMessage> getFolderMessages(MailFolder folder, ObservableList<MailMessage> stored) {
+    public ObservableSet<MailMessage> getFolderMessages(MailFolder folder, ObservableSet<MailMessage> stored) {
         ModificationObserver.getInstance().startObserve(stored, folder);
         storage.loadFromFolder(folder);
         return stored;

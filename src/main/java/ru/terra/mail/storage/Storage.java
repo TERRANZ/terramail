@@ -2,6 +2,7 @@ package ru.terra.mail.storage;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.ObservableSet;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -103,8 +104,8 @@ public class Storage {
         });
     }
 
-    public ObservableList<MailMessage> getFolderMessages(MailFolder mailFolder) {
-        return FXCollections.observableArrayList(messagesController
+    public ObservableSet<MailMessage> getFolderMessages(MailFolder mailFolder) {
+        return FXCollections.observableSet(messagesController
                 .findByFolderId(foldersController.findByFullName(mailFolder.getFullName()).getId()).stream().map(m -> {
                     MailMessage ret = new MailMessage(m, mailFolder);
                     List<AttachmentEntity> attachments = attachmentsController.findByFolderId(m.getId());
@@ -112,7 +113,7 @@ public class Storage {
                         attachments.forEach(a -> ret.getAttachments().add(new MailMessageAttachment(a)));
                     }
                     return ret;
-                }).collect(Collectors.toList()));
+                }).collect(Collectors.toSet()));
     }
 
     public void storeFolderMessage(MailMessage m) {
@@ -151,19 +152,17 @@ public class Storage {
         try {
             if (!folder.getFolder().isOpen())
                 folder.getFolder().open(Folder.READ_ONLY);
-            Arrays.stream(folder.getFolder().getMessages()).forEach(m -> {
-                service.submit(() -> {
-                    try {
-                        if (!messagesController.isExists(m.getReceivedDate())) {
-                            MailMessage msg = new MailMessage(m, folder);
-                            processMailMessageAttachments(msg);
-                            storeFolderMessage(msg);
-                        }
-                    } catch (MessagingException e) {
-                        e.printStackTrace();
+            Arrays.stream(folder.getFolder().getMessages()).forEach(m -> service.submit(() -> {
+                try {
+                    if (!messagesController.isExists(m.getReceivedDate())) {
+                        MailMessage msg = new MailMessage(m, folder);
+                        processMailMessageAttachments(msg);
+                        storeFolderMessage(msg);
                     }
-                });
-            });
+                } catch (MessagingException e) {
+                    e.printStackTrace();
+                }
+            }));
         } catch (Exception e) {
             logger.error("Unable to load messages from server", e);
         }
@@ -177,8 +176,9 @@ public class Storage {
                 for (int j = 0; j < multipart.getCount(); j++) {
                     BodyPart bodyPart = multipart.getBodyPart(j);
                     DataHandler handler = bodyPart.getDataHandler();
-                    mm.getAttachments().add(new MailMessageAttachment(IOUtils.toByteArray(handler.getInputStream()),
-                            handler.getContentType(), handler.getName()));
+                    mm.getAttachments().add(new MailMessageAttachment(
+                            IOUtils.toByteArray(handler.getInputStream()),
+                            handler.getContentType(), handler.getName(), false));
                 }
                 if (msg.getContentType().startsWith("text/html") || msg.getContentType().startsWith("text/plain")) {
                     mm.setMessageBody(IOUtils.toString(msg.getInputStream(), Charset.forName("UTF-8")));
