@@ -1,6 +1,5 @@
 package ru.terra.mail.gui.model;
 
-import javafx.collections.ObservableList;
 import javafx.collections.ObservableSet;
 import ru.terra.mail.storage.ModificationObserver;
 import ru.terra.mail.storage.domain.MailFolder;

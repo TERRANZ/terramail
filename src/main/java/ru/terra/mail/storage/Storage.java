@@ -4,11 +4,9 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableSet;
 import javafx.scene.control.TreeItem;
-
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import ru.terra.mail.gui.controller.beans.FoldersTreeItem;
 import ru.terra.mail.storage.db.controllers.AttachmentsController;
 import ru.terra.mail.storage.db.controllers.FoldersController;
@@ -27,11 +25,7 @@ import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMultipart;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
@@ -194,7 +188,7 @@ public class Storage {
             logger.error("Unable to process mail message", e);
         }
     }
-        
+
     public TreeItem<FoldersTreeItem> processFolder(TreeItem<FoldersTreeItem> parent, MailFolder mailFolder) {
         TreeItem<FoldersTreeItem> ret = new TreeItem<>(new FoldersTreeItem(mailFolder));
         parent.getChildren().add(ret);
@@ -203,7 +197,7 @@ public class Storage {
     }
 
     public ObservableList<MailFolder> merge(ObservableList<MailFolder> storedFolders,
-                                               ObservableList<MailFolder> serverFolders) {
+                                            ObservableList<MailFolder> serverFolders) {
         if (storedFolders == null || storedFolders.size() == 0) {
             storedFolders = FXCollections.observableArrayList();
             storedFolders.addAll(serverFolders);

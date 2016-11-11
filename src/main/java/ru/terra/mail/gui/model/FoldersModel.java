@@ -1,16 +1,12 @@
 package ru.terra.mail.gui.model;
 
-import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.TreeItem;
 import ru.terra.mail.gui.controller.beans.FoldersTreeItem;
 import ru.terra.mail.storage.domain.MailFolder;
 
 import javax.mail.MessagingException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by terranz on 19.10.16.
@@ -43,7 +39,7 @@ public class FoldersModel extends AbstractModel<MailFolder> {
         folders.get(0).getChildFolders().forEach(cf -> storage.processFolder(treeRoot, cf));
         return treeRoot;
     }
-    
+
     public ObservableList<MailFolder> getFolders() {
         ObservableList<MailFolder> storedFolders = null;
         try {

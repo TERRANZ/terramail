@@ -1,6 +1,5 @@
 package ru.terra.mail.storage;
 
-import javafx.collections.ObservableList;
 import javafx.collections.ObservableSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
