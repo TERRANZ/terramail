@@ -3,9 +3,13 @@ package ru.terra.mail.storage;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableSet;
+import javafx.scene.control.TreeItem;
+
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ru.terra.mail.gui.controller.beans.FoldersTreeItem;
 import ru.terra.mail.storage.db.controllers.AttachmentsController;
 import ru.terra.mail.storage.db.controllers.FoldersController;
 import ru.terra.mail.storage.db.controllers.MessagesController;
@@ -23,6 +27,7 @@ import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMultipart;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -43,7 +48,7 @@ public class Storage {
     private ExecutorService service;
 
     public Storage() {
-        service = Executors.newFixedThreadPool(10);
+        service = Executors.newCachedThreadPool();
     }
 
     public ObservableList<MailFolder> getRootFolders() throws Exception {
@@ -188,5 +193,58 @@ public class Storage {
         } catch (Exception e) {
             logger.error("Unable to process mail message", e);
         }
+    }
+        
+    public TreeItem<FoldersTreeItem> processFolder(TreeItem<FoldersTreeItem> parent, MailFolder mailFolder) {
+        TreeItem<FoldersTreeItem> ret = new TreeItem<>(new FoldersTreeItem(mailFolder));
+        parent.getChildren().add(ret);
+        mailFolder.getChildFolders().forEach(cf -> processFolder(ret, cf));
+        return ret;
+    }
+
+    public ObservableList<MailFolder> merge(ObservableList<MailFolder> storedFolders,
+                                               ObservableList<MailFolder> serverFolders) {
+        if (storedFolders == null || storedFolders.size() == 0) {
+            storedFolders = FXCollections.observableArrayList();
+            storedFolders.addAll(serverFolders);
+        } else {
+            Map<String, MailFolder> serverFoldersMap = new HashMap<>();
+            List<MailFolder> expandedServerfolders = new ArrayList<>();
+            List<MailFolder> expandedStoredfolders = new ArrayList<>();
+            serverFolders.forEach(sf -> expandedServerfolders.addAll(expandFoldersTree(sf)));
+            storedFolders.forEach(sf -> expandedStoredfolders.addAll(expandFoldersTree(sf)));
+            expandedServerfolders.forEach(f -> serverFoldersMap.put(f.getFullName(), f));
+            for (MailFolder storedFolder : expandedStoredfolders) {
+                MailFolder serverFolder = serverFoldersMap.get(storedFolder.getFullName());
+                if (serverFolder != null) {
+                    storedFolder.setFolder(serverFolder.getFolder());
+                    storedFolder.setUnreadMessages(serverFolder.getUnreadMessages());
+                } else
+                    storedFolder.setDeleted(true);
+            }
+            mergeFoldersTree(storedFolders, serverFoldersMap);
+        }
+
+        storeFolders(storedFolders);
+        return storedFolders;
+    }
+
+    public void mergeFoldersTree(List<MailFolder> storedFolders, Map<String, MailFolder> serverFoldersMap) {
+        List<MailFolder> foldersToAdd = new ArrayList<>();
+        for (MailFolder storedFolder : storedFolders)
+            if (!serverFoldersMap.containsKey(storedFolder.getFullName()))
+                foldersToAdd.add(serverFoldersMap.get(storedFolder.getFullName()));
+            else
+                mergeFoldersTree(storedFolder.getChildFolders(), serverFoldersMap);
+
+        storedFolders.addAll(foldersToAdd);
+    }
+
+    public List<MailFolder> expandFoldersTree(MailFolder mailFolder) {
+        List<MailFolder> folders = new ArrayList<>();
+        folders.add(mailFolder);
+        if (mailFolder.getChildFolders().size() > 0)
+            mailFolder.getChildFolders().forEach(mf -> folders.addAll(expandFoldersTree(mf)));
+        return folders;
     }
 }
