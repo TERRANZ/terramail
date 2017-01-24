@@ -52,10 +52,14 @@ public class ElasticSearchStorage implements AbstractStorage {
         Map<String, MailFolder> foldersMap = new HashMap<>();
         MailFolder inbox = null;
         Map<String, FolderEntity> storedFoldersMap = new HashMap<>();
-        foldersRepo.findAll().forEach(f -> {
-            storedFoldersMap.put(f.getGuid(), f);
-            foldersMap.put(f.getFullName(), new MailFolder(f));
-        });
+        try {
+            foldersRepo.findAll().forEach(f -> {
+                storedFoldersMap.put(f.getGuid(), f);
+                foldersMap.put(f.getFullName(), new MailFolder(f));
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         for (FolderEntity fe : storedFoldersMap.values()) {
             if (!Objects.equals(fe.getParentFolderId(), "-1")) {
                 FolderEntity parentEntity = storedFoldersMap.get(fe.getParentFolderId());

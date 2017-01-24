@@ -10,8 +10,7 @@ import java.util.UUID;
 /**
  * Created by Vadim_Korostelev on 1/24/2017.
  */
-
-@Document(indexName = "mailfolder")
+@Document(indexName = "mailfolder", type = "mailfolder", shards = 1, replicas = 0)
 public class FolderEntity implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id

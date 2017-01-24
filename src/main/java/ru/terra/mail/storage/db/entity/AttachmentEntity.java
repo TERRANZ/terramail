@@ -10,7 +10,7 @@ import java.util.UUID;
 /**
  * Created by Vadim_Korostelev on 1/24/2017.
  */
-@Document(indexName = "mailattachment")
+@Document(indexName = "mailattachment", type = "mailattachment", shards = 1, replicas = 0)
 public class AttachmentEntity implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id

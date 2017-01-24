@@ -12,7 +12,7 @@ import java.util.UUID;
  * Created by Vadim_Korostelev on 1/24/2017.
  */
 
-@Document(indexName = "mailmessage")
+@Document(indexName = "mailmessage", type = "mailmessage", shards = 1, replicas = 0)
 public class MessageEntity implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
