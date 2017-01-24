@@ -18,7 +18,7 @@ public class ModificationObserver {
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     private Logger logger = LoggerFactory.getLogger(this.getClass());
     private List<ScheduledFuture<?>> checks = new ArrayList<>();
-    private Storage storage = StorageSingleton.getInstance().getStorage();
+    private AbstractStorage storage = StorageSingleton.getInstance().getStorage();
 
     private ModificationObserver() {
     }
