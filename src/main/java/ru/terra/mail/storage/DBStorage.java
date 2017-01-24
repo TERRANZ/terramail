@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 /**
  * Created by terranz on 18.10.16.
  */
-public class Storage implements AbstractStorage {
+public class DBStorage implements AbstractStorage {
 
     private FoldersController foldersController = new FoldersController();
     private MessagesController messagesController = new MessagesController();
@@ -41,7 +41,7 @@ public class Storage implements AbstractStorage {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
     private ExecutorService service;
 
-    public Storage() {
+    public DBStorage() {
         service = Executors.newCachedThreadPool();
     }
 
