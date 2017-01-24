@@ -6,7 +6,6 @@ import ru.terra.mail.config.Configuration;
 import ru.terra.mail.config.StartUpParameters;
 import ru.terra.mail.core.AbstractMailProtocol;
 import ru.terra.mail.storage.AbstractStorage;
-import ru.terra.mail.storage.DBStorage;
 import ru.terra.mail.storage.StorageSingleton;
 
 import javax.mail.MessagingException;
