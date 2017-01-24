@@ -8,6 +8,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javafx.util.Pair;
+import org.springframework.stereotype.Component;
 import ru.terra.mail.gui.core.AbstractDialog;
 import ru.terra.mail.gui.core.AbstractUIController;
 
@@ -19,6 +20,7 @@ import java.util.List;
 /**
  * Created by terranz on 18.10.16.
  */
+@Component
 public class StageHelper {
     private static List<Stage> openedStages = new ArrayList<>();
     private static StageCloseEventHandler stageCloseEventHandler = new StageCloseEventHandler();

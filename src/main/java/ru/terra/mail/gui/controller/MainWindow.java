@@ -15,6 +15,7 @@ import javafx.scene.control.*;
 import javafx.scene.web.WebView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.terra.mail.Main;
 import ru.terra.mail.gui.StageHelper;
 import ru.terra.mail.gui.controller.beans.FoldersTreeItem;
 import ru.terra.mail.gui.controller.beans.MessagesTableItem;
@@ -43,15 +44,18 @@ public class MainWindow extends AbstractUIController {
     @FXML
     private TableView<MessagesTableItem> tvMessages;
     private TreeItem<FoldersTreeItem> treeRoot;
-    private FoldersModel foldersModel = new FoldersModel();
-    private MessagesModel messagesModel = new MessagesModel();
     @FXML
     private TableColumn<MessagesTableItem, String> colSubject;
     @FXML
     private TableColumn<MessagesTableItem, Date> colDate;
 
+    private FoldersModel foldersModel;
+    private MessagesModel messagesModel;
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        foldersModel = Main.getContext().getBean(FoldersModel.class);
+        messagesModel = Main.getContext().getBean(MessagesModel.class);
         setColums();
         showFolders();
         setFolderSelectionEvents();

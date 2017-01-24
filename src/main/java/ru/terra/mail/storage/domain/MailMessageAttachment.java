@@ -1,5 +1,7 @@
 package ru.terra.mail.storage.domain;
 
+import ru.terra.mail.storage.db.entity.AttachmentEntity;
+
 /**
  * Created by terranz on 20.10.16.
  */
@@ -19,11 +21,11 @@ public class MailMessageAttachment {
         this.downloaded = downloaded;
     }
 
-//    public MailMessageAttachment(AttachmentEntity a) {
-//        this.body = a.getBody();
-//        this.type = a.getType();
-//        this.fileName = a.getFileName();
-//    }
+    public MailMessageAttachment(AttachmentEntity a) {
+        this.body = a.getBody();
+        this.type = a.getType();
+        this.fileName = a.getFileName();
+    }
 
     public byte[] getBody() {
         return body;

@@ -4,7 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import ru.terra.mail.config.Configuration;
+import ru.terra.mail.config.MailConfiguration;
 import ru.terra.mail.config.StartUpParameters;
 import ru.terra.mail.core.AbstractMailProtocol;
 import ru.terra.mail.storage.AbstractStorage;
@@ -19,7 +19,7 @@ import java.security.GeneralSecurityException;
 @Component
 public abstract class AbstractModel<Bean> {
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
-    protected AbstractMailProtocol protocol = Configuration.getInstance().getMailProtocol();
+    protected AbstractMailProtocol protocol = MailConfiguration.getInstance().getMailProtocol();
     @Autowired
     private Storage storage;
 

@@ -2,6 +2,7 @@ package ru.terra.mail.storage.domain;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.slf4j.LoggerFactory;
+import ru.terra.mail.storage.db.entity.MessageEntity;
 
 import javax.mail.Header;
 import javax.mail.Message;
@@ -30,7 +31,7 @@ public class MailMessage {
         guid = UUID.randomUUID().toString();
     }
 
-//    public MailMessage(MessageEntity me, MailFolder mf) {
+//    public MessageEntity(MessageEntity me, FolderEntity mf) {
 //        this.guid = UUID.randomUUID().toString();
 //        this.folder = mf;
 //        this.subject = me.getSubject();
@@ -63,6 +64,10 @@ public class MailMessage {
         }
         this.message = msg;
         this.attachments = new ArrayList<>();
+    }
+
+    public MailMessage(MessageEntity m, MailFolder mailFolder) {
+
     }
 
     public MailFolder getFolder() {

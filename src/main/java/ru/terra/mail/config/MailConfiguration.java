@@ -6,13 +6,13 @@ import ru.terra.mail.core.prot.imap.ImapProtocol;
 /**
  * Created by terranz on 19.10.16.
  */
-public class Configuration {
-    public static Configuration instance = new Configuration();
+public class MailConfiguration {
+    public static MailConfiguration instance = new MailConfiguration();
 
-    private Configuration() {
+    private MailConfiguration() {
     }
 
-    public static Configuration getInstance() {
+    public static MailConfiguration getInstance() {
         return instance;
     }
 

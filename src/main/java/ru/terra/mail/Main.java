@@ -18,9 +18,11 @@ import ru.terra.mail.gui.StageHelper;
 @Component
 @ComponentScan
 public class Main extends Application {
+    public static ConfigurableApplicationContext context;
+
     public static void main(String... args) {
-        ConfigurableApplicationContext ctx = SpringApplication.run(Main.class, args);
-        ctx.getBean(MailSystem.class).start();
+        context = SpringApplication.run(Main.class, args);
+        context.getBean(MailSystem.class).start();
         new JCommander(StartUpParameters.getInstance(), args);
         launch(args);
     }
@@ -28,5 +30,9 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         StageHelper.openWindow("w_main.fxml", "Main", true);
+    }
+
+    public static ConfigurableApplicationContext getContext() {
+        return context;
     }
 }

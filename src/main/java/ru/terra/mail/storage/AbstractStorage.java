@@ -18,13 +18,13 @@ public interface AbstractStorage {
 
     void storeFolders(List<MailFolder> mailFolders);
 
-    void storeFolders(List<MailFolder> mailFolders, Integer parentId);
+    void storeFolders(List<MailFolder> mailFolders, String parentId);
 
     ObservableSet<MailMessage> getFolderMessages(MailFolder mailFolder);
 
     void storeFolderMessage(MailMessage m);
 
-    void storeFolderMessage(Integer parentId, MailMessage m);
+    void storeFolderMessage(String parentId, MailMessage m);
 
     void storeFolderMessages(MailFolder mailFolder, List<MailMessage> messages);
 
