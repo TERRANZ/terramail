@@ -5,7 +5,7 @@ package ru.terra.mail.storage;
  */
 public class StorageSingleton {
     private static StorageSingleton instance = new StorageSingleton();
-    private Storage storage;
+    private AbstractStorage storage;
 
     private StorageSingleton() {
         storage = new Storage();
@@ -15,7 +15,7 @@ public class StorageSingleton {
         return instance;
     }
 
-    public Storage getStorage() {
+    public AbstractStorage getStorage() {
         return storage;
     }
 }

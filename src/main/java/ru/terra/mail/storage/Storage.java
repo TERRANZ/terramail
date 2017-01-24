@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 /**
  * Created by terranz on 18.10.16.
  */
-public class Storage {
+public class Storage implements AbstractStorage {
 
     private FoldersController foldersController = new FoldersController();
     private MessagesController messagesController = new MessagesController();
@@ -45,6 +45,7 @@ public class Storage {
         service = Executors.newCachedThreadPool();
     }
 
+    @Override
     public ObservableList<MailFolder> getRootFolders() throws Exception {
         Map<String, MailFolder> foldersMap = new HashMap<>();
         MailFolder inbox = null;
@@ -67,6 +68,7 @@ public class Storage {
         return FXCollections.observableArrayList(inbox);
     }
 
+    @Override
     public void storeFolders(List<MailFolder> mailFolders) {
         mailFolders.forEach(f -> {
             try {
@@ -85,6 +87,7 @@ public class Storage {
         });
     }
 
+    @Override
     public void storeFolders(List<MailFolder> mailFolders, Integer parentId) {
         mailFolders.forEach(f -> {
             try {
@@ -103,6 +106,7 @@ public class Storage {
         });
     }
 
+    @Override
     public ObservableSet<MailMessage> getFolderMessages(MailFolder mailFolder) {
         return FXCollections.observableSet(messagesController
                 .findByFolderId(foldersController.findByFullName(mailFolder.getFullName()).getId()).stream().map(m -> {
@@ -115,10 +119,12 @@ public class Storage {
                 }).collect(Collectors.toSet()));
     }
 
+    @Override
     public void storeFolderMessage(MailMessage m) {
         storeFolderMessage(foldersController.findByFullName(m.getFolder().getFullName()).getId(), m);
     }
 
+    @Override
     public void storeFolderMessage(Integer parentId, MailMessage m) {
         MessageEntity me = new MessageEntity(m, parentId);
         if (!messagesController.isExists(me.getCreateDate())) {
@@ -135,23 +141,28 @@ public class Storage {
         }
     }
 
+    @Override
     public void storeFolderMessages(MailFolder mailFolder, List<MailMessage> messages) {
         Integer parentId = foldersController.findByFullName(mailFolder.getFullName()).getId();
         messages.forEach(m -> storeFolderMessage(parentId, m));
     }
 
+    @Override
     public Integer countMessages(MailFolder mailFolder) {
         return messagesController.findByFolderId(foldersController.findByFullName(mailFolder.getFullName()).getId())
                 .size();
     }
 
+    @Override
     public void loadFromFolder(MailFolder folder) {
         if (folder.getFolder() == null)
             return;
         try {
             if (!folder.getFolder().isOpen())
                 folder.getFolder().open(Folder.READ_ONLY);
-            Arrays.stream(folder.getFolder().getMessages()).forEach(m -> service.submit(() -> {
+            int start = 1;
+            int end = folder.getFolder().getMessageCount() < 20 ? folder.getFolder().getMessageCount() : 20;
+            Arrays.stream(folder.getFolder().getMessages(1, end)).forEach(m -> service.submit(() -> {
                 try {
                     if (!messagesController.isExists(m.getReceivedDate())) {
                         MailMessage msg = new MailMessage(m, folder);
@@ -189,6 +200,7 @@ public class Storage {
         }
     }
 
+    @Override
     public TreeItem<FoldersTreeItem> processFolder(TreeItem<FoldersTreeItem> parent, MailFolder mailFolder) {
         TreeItem<FoldersTreeItem> ret = new TreeItem<>(new FoldersTreeItem(mailFolder));
         parent.getChildren().add(ret);
@@ -196,6 +208,7 @@ public class Storage {
         return ret;
     }
 
+    @Override
     public ObservableList<MailFolder> merge(ObservableList<MailFolder> storedFolders,
                                             ObservableList<MailFolder> serverFolders) {
         if (storedFolders == null || storedFolders.size() == 0) {
@@ -223,6 +236,7 @@ public class Storage {
         return storedFolders;
     }
 
+    @Override
     public void mergeFoldersTree(List<MailFolder> storedFolders, Map<String, MailFolder> serverFoldersMap) {
         List<MailFolder> foldersToAdd = new ArrayList<>();
         for (MailFolder storedFolder : storedFolders)
@@ -234,6 +248,7 @@ public class Storage {
         storedFolders.addAll(foldersToAdd);
     }
 
+    @Override
     public List<MailFolder> expandFoldersTree(MailFolder mailFolder) {
         List<MailFolder> folders = new ArrayList<>();
         folders.add(mailFolder);
