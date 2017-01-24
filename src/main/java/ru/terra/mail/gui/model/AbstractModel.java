@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 import ru.terra.mail.config.Configuration;
 import ru.terra.mail.config.StartUpParameters;
 import ru.terra.mail.core.AbstractMailProtocol;
-import ru.terra.mail.storage.AbstractStorage;
+import ru.terra.mail.storage.Storage;
 import ru.terra.mail.storage.StorageSingleton;
 
 import javax.mail.MessagingException;
@@ -16,7 +16,7 @@ import java.security.GeneralSecurityException;
  */
 public abstract class AbstractModel<Bean> {
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
-    protected AbstractStorage storage = StorageSingleton.getInstance().getStorage();
+    protected Storage storage = StorageSingleton.getInstance().getStorage();
     protected AbstractMailProtocol protocol = Configuration.getInstance().getMailProtocol();
 
     protected void performLogin() throws GeneralSecurityException, MessagingException {

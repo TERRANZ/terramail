@@ -1,6 +1,7 @@
 package ru.terra.mail.storage.domain;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
+import ru.terra.mail.storage.db.entity.FolderEntity;
 
 import javax.mail.Folder;
 import javax.mail.MessagingException;
@@ -39,14 +40,14 @@ public class MailFolder {
         }
     }
 
-//    public MailFolder(FolderEntity f) {
-//        this.name = f.getName();
-//        this.fullName = f.getFullName();
-//        this.childFolders = new ArrayList<>();
-//        this.guid = UUID.randomUUID().toString();
-//        this.deleted = f.getDeleted();
-//        this.unreadMessages = f.getUnreadMessages();
-//    }
+    public MailFolder(FolderEntity f) {
+        this.name = f.getName();
+        this.fullName = f.getFullName();
+        this.childFolders = new ArrayList<>();
+        this.guid = UUID.randomUUID().toString();
+        this.deleted = f.getDeleted();
+        this.unreadMessages = f.getUnreadMessages();
+    }
 
     public String getGuid() {
         return guid;

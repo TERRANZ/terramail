@@ -8,7 +8,7 @@ public class StorageSingleton {
     private AbstractStorage storage;
 
     private StorageSingleton() {
-//        storage = new Storage();
+        storage = new Storage();
     }
 
     public static StorageSingleton getInstance() {

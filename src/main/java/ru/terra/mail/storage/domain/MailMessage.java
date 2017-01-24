@@ -2,6 +2,7 @@ package ru.terra.mail.storage.domain;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.slf4j.LoggerFactory;
+import ru.terra.mail.storage.db.entity.MessageEntity;
 
 import javax.mail.Header;
 import javax.mail.Message;
@@ -30,17 +31,17 @@ public class MailMessage {
         guid = UUID.randomUUID().toString();
     }
 
-//    public MailMessage(MessageEntity me, MailFolder mf) {
-//        this.guid = UUID.randomUUID().toString();
-//        this.folder = mf;
-//        this.subject = me.getSubject();
-//        this.createDate = me.getCreateDate();
-//        this.from = me.getFrom();
-//        this.to = me.getTo();
-//        this.messageBody = me.getMessageBody();
-//        this.attachments = new ArrayList<>();
-//        this.headers = me.getHeaders();
-//    }
+    public MailMessage(MessageEntity me, MailFolder mf) {
+        this.guid = UUID.randomUUID().toString();
+        this.folder = mf;
+        this.subject = me.getSubject();
+        this.createDate = me.getCreateDate();
+        this.from = me.getFrom();
+        this.to = me.getTo();
+        this.messageBody = me.getMessageBody();
+        this.attachments = new ArrayList<>();
+        this.headers = me.getHeaders();
+    }
 
     public MailMessage(Message msg, MailFolder mailFolder) {
         LoggerFactory.getLogger(this.getClass()).info("Generating mail message from transport message");
