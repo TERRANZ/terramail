@@ -5,7 +5,6 @@ import org.springframework.data.elasticsearch.annotations.Document;
 import ru.terra.mail.storage.domain.MailMessage;
 
 import java.io.Serializable;
-import java.util.Date;
 import java.util.UUID;
 
 /**
@@ -17,7 +16,7 @@ public class MessageEntity implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
     private String guid;
-    private Date createDate;
+    private Long createDate;
     private String subject;
     private String from;
     private String to;
@@ -30,7 +29,7 @@ public class MessageEntity implements Serializable {
 
     public MessageEntity(MailMessage m, String folderId) {
         this.guid = UUID.randomUUID().toString();
-        this.createDate = m.getCreateDate();
+        this.createDate = m.getCreateDate().getTime();
         this.subject = m.getSubject();
         this.from = m.getFrom();
         this.to = m.getTo();
@@ -55,11 +54,11 @@ public class MessageEntity implements Serializable {
         this.guid = guid;
     }
 
-    public Date getCreateDate() {
+    public Long getCreateDate() {
         return createDate;
     }
 
-    public void setCreateDate(Date createDate) {
+    public void setCreateDate(Long createDate) {
         this.createDate = createDate;
     }
 

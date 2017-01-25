@@ -31,18 +31,6 @@ public class MailMessage {
         guid = UUID.randomUUID().toString();
     }
 
-//    public MessageEntity(MessageEntity me, FolderEntity mf) {
-//        this.guid = UUID.randomUUID().toString();
-//        this.folder = mf;
-//        this.subject = me.getSubject();
-//        this.createDate = me.getCreateDate();
-//        this.from = me.getFrom();
-//        this.to = me.getTo();
-//        this.messageBody = me.getMessageBody();
-//        this.attachments = new ArrayList<>();
-//        this.headers = me.getHeaders();
-//    }
-
     public MailMessage(Message msg, MailFolder mailFolder) {
         LoggerFactory.getLogger(this.getClass()).info("Generating mail message from transport message");
         this.guid = UUID.randomUUID().toString();
@@ -66,8 +54,16 @@ public class MailMessage {
         this.attachments = new ArrayList<>();
     }
 
-    public MailMessage(MessageEntity m, MailFolder mailFolder) {
-
+    public MailMessage(MessageEntity me, MailFolder mf) {
+        this.guid = UUID.randomUUID().toString();
+        this.folder = mf;
+        this.subject = me.getSubject();
+        this.createDate = new Date(me.getCreateDate());
+        this.from = me.getFrom();
+        this.to = me.getTo();
+        this.messageBody = me.getMessageBody();
+        this.attachments = new ArrayList<>();
+        this.headers = me.getHeaders();
     }
 
     public MailFolder getFolder() {

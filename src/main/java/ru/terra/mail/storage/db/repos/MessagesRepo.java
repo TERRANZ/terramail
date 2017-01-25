@@ -11,8 +11,8 @@ import java.util.List;
  * Created by Vadim_Korostelev on 1/24/2017.
  */
 public interface MessagesRepo extends ElasticsearchRepository<MessageEntity, String> {
+    @Query("{\"bool\" : {\"must\" : {\"match\" : {\"folderId\" : \"?0\"}}}}")
     List<MessageEntity> findByFolderId(String folderId);
-
-    @Query("{\"bool\" : {\"must\" : {\"term\" : {\"createDate\" : \"?0\"}}}}")
-    MessageEntity findByCreateDate(Date createDate);
+    @Query("{\"bool\" : {\"must\" : {\"match\" : {\"createDate\" : \"?0\"}}}}")
+    MessageEntity findByCreateDate(Long createDate);
 }

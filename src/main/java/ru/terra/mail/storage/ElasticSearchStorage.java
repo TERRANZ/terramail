@@ -167,7 +167,7 @@ public class ElasticSearchStorage implements AbstractStorage {
             int end = folder.getFolder().getMessageCount() < 20 ? folder.getFolder().getMessageCount() : 20;
             Arrays.stream(folder.getFolder().getMessages(1, end)).forEach(m -> service.submit(() -> {
                 try {
-                    if (messagesRepo.findByCreateDate(m.getReceivedDate()) != null) {
+                    if (messagesRepo.findByCreateDate(m.getReceivedDate().getTime()) == null) {
                         MailMessage msg = new MailMessage(m, folder);
                         processMailMessageAttachments(msg);
                         storeFolderMessage(msg);
