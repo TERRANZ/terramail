@@ -58,8 +58,6 @@ public class MainWindow extends AbstractUIController {
         messagesModel = Main.getContext().getBean(MessagesModel.class);
         setColums();
         showFolders();
-        setFolderSelectionEvents();
-        setMessagesTableSelectionEvents();
     }
 
     private void setColums() {
@@ -123,7 +121,11 @@ public class MainWindow extends AbstractUIController {
             tvFolders.setRoot(treeRoot);
         LoadFolderService loadFolderService = new LoadFolderService();
         loadFolderService.start();
-        loadFolderService.setOnSucceeded((e) -> updateStatus("Folders loaded"));
+        loadFolderService.setOnSucceeded((e) -> {
+            updateStatus("Folders loaded");
+            setFolderSelectionEvents();
+            setMessagesTableSelectionEvents();
+        });
     }
 
     private void showMessages(MailFolder mailFolder) {

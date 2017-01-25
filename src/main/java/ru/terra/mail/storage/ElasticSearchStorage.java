@@ -134,7 +134,7 @@ public class ElasticSearchStorage implements AbstractStorage {
         if (messagesRepo.findByCreateDate(me.getCreateDate()) == null) {
             try {
                 messagesRepo.save(me);
-                logger.info("Created " + me.toString());
+//                logger.info("Created " + me.toString());
                 for (MailMessageAttachment mma : m.getAttachments()) {
                     AttachmentEntity ae = new AttachmentEntity(mma, me.getGuid());
                     attachmentsRepo.save(ae);
@@ -164,18 +164,24 @@ public class ElasticSearchStorage implements AbstractStorage {
             if (!folder.getFolder().isOpen())
                 folder.getFolder().open(Folder.READ_ONLY);
             int start = 1;
-            int end = folder.getFolder().getMessageCount() < 20 ? folder.getFolder().getMessageCount() : 20;
-            Arrays.stream(folder.getFolder().getMessages(1, end)).forEach(m -> service.submit(() -> {
-                try {
-                    if (messagesRepo.findByCreateDate(m.getReceivedDate().getTime()) == null) {
-                        MailMessage msg = new MailMessage(m, folder);
-                        processMailMessageAttachments(msg);
-                        storeFolderMessage(msg);
+            int count = folder.getFolder().getMessageCount();
+            logger.info("Count: " + count);
+            while (start < count) {
+                int end = count - start < 20 ? count - start : 20;
+                logger.info("requesting from " + start + " to " + (start + end));
+                Arrays.stream(folder.getFolder().getMessages(start, end + start)).forEach(m -> service.submit(() -> {
+                    try {
+                        if (messagesRepo.findByCreateDate(m.getReceivedDate().getTime()) == null) {
+                            MailMessage msg = new MailMessage(m, folder);
+                            processMailMessageAttachments(msg);
+                            storeFolderMessage(msg);
+                        }
+                    } catch (MessagingException e) {
+                        e.printStackTrace();
                     }
-                } catch (MessagingException e) {
-                    e.printStackTrace();
-                }
-            }));
+                }));
+                start += end;
+            }
         } catch (Exception e) {
             logger.error("Unable to load messages from server", e);
         }
