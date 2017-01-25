@@ -1,6 +1,5 @@
 package ru.terra.mail.storage.db.repos;
 
-import org.springframework.data.elasticsearch.annotations.Query;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 import ru.terra.mail.storage.db.entity.AttachmentEntity;
 

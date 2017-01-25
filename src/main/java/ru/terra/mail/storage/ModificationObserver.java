@@ -50,6 +50,7 @@ public class ModificationObserver {
             Integer messagesInDb = storage.getStorage().countMessages(mailFolder);
             if (messagesInDb != messages.size()) {
 //                logger.info("Modifications: in db: " + messagesInDb + " <> " + messages.size());
+                messages.clear();
                 messages.addAll(storage.getStorage().getFolderMessages(mailFolder));
             } else {
 //                logger.info("No modifications");

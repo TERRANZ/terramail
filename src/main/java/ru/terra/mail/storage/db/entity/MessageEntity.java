@@ -101,4 +101,16 @@ public class MessageEntity implements Serializable {
     public void setHeaders(String headers) {
         this.headers = headers;
     }
+
+    @Override
+    public String toString() {
+        return "MessageEntity{" +
+                "guid='" + guid + '\'' +
+                ", createDate=" + createDate +
+                ", subject='" + subject + '\'' +
+                ", from='" + from + '\'' +
+                ", to='" + to + '\'' +
+                ", folderId='" + folderId + '\'' +
+                '}';
+    }
 }
