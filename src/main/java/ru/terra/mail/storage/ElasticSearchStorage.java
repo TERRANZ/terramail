@@ -45,7 +45,7 @@ public class ElasticSearchStorage implements AbstractStorage {
     private AttachmentsRepo attachmentsRepo;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
-    private ExecutorService service = Executors.newCachedThreadPool();
+    private ExecutorService service = Executors.newFixedThreadPool(50);
 
     @Override
     public ObservableList<MailFolder> getRootFolders() throws Exception {
@@ -134,7 +134,7 @@ public class ElasticSearchStorage implements AbstractStorage {
         if (messagesRepo.findByCreateDate(me.getCreateDate()) == null) {
             try {
                 messagesRepo.save(me);
-//                logger.info("Created " + me.toString());
+                logger.info("Created " + me.toString());
                 for (MailMessageAttachment mma : m.getAttachments()) {
                     AttachmentEntity ae = new AttachmentEntity(mma, me.getGuid());
                     attachmentsRepo.save(ae);
@@ -165,7 +165,7 @@ public class ElasticSearchStorage implements AbstractStorage {
                 folder.getFolder().open(Folder.READ_ONLY);
             int start = 1;
             int count = folder.getFolder().getMessageCount();
-            logger.info("Count: " + count);
+            logger.info("Count: " + count + " in folder " + folder.getFullName());
             while (start < count) {
                 int end = count - start < 20 ? count - start : 20;
                 logger.info("requesting from " + start + " to " + (start + end));

@@ -4,9 +4,8 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.web.WebView?>
-<VBox xmlns:fx="http://javafx.com/fxml/1" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
-      minWidth="-Infinity"
-      prefHeight="806.0" prefWidth="889.0" xmlns="http://javafx.com/javafx/8"
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="806.0"
+      prefWidth="889.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="ru.terra.mail.gui.controller.MainWindow">
     <children>
         <MenuBar>
@@ -23,7 +22,7 @@
         </MenuBar>
         <HBox>
             <children>
-                <Button mnemonicParsing="false">
+                <Button mnemonicParsing="false" text="full download" onAction="#fullDownload">
                     <HBox.margin>
                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
                     </HBox.margin>
@@ -75,8 +74,8 @@
                                             <children>
                                                 <HBox VBox.vgrow="NEVER">
                                                     <children>
-                                                        <Button mnemonicParsing="false" text="Show source"
-                                                                onAction="#showSource">
+                                                        <Button mnemonicParsing="false" onAction="#showSource"
+                                                                text="Show source">
                                                             <HBox.margin>
                                                                 <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
                                                             </HBox.margin>
@@ -87,8 +86,8 @@
                                                          VBox.vgrow="ALWAYS"/>
                                                 <HBox VBox.vgrow="NEVER">
                                                     <children>
-                                                        <Button mnemonicParsing="false" text="Attachments"
-                                                                onAction="#showAttachments">
+                                                        <Button mnemonicParsing="false" onAction="#showAttachments"
+                                                                text="Attachments">
                                                             <HBox.margin>
                                                                 <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
                                                             </HBox.margin>

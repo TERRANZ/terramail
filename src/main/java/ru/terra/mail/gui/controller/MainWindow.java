@@ -2,7 +2,6 @@ package ru.terra.mail.gui.controller;
 
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
-import javafx.beans.Observable;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -51,6 +50,7 @@ public class MainWindow extends AbstractUIController {
 
     private FoldersModel foldersModel;
     private MessagesModel messagesModel;
+    private FullLoadService fullLoadService;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -146,13 +146,10 @@ public class MainWindow extends AbstractUIController {
             tvMessages.setItems(displayItems);
             updateStatus("Messages loaded");
         });
-        storedMessages.addListener(new InvalidationListener() {
-            @Override
-            public void invalidated(Observable observable) {
-                displayItems.clear();
-                displayItems.addAll(storedMessages.stream().map(MessagesTableItem::new).collect(Collectors.toList()));
-                tvMessages.setItems(displayItems);
-            }
+        storedMessages.addListener((InvalidationListener) observable -> {
+            displayItems.clear();
+            displayItems.addAll(storedMessages.stream().map(MessagesTableItem::new).collect(Collectors.toList()));
+            tvMessages.setItems(displayItems);
         });
     }
 
@@ -177,6 +174,12 @@ public class MainWindow extends AbstractUIController {
 
     public void showAttachments(ActionEvent actionEvent) {
 
+    }
+
+    public void fullDownload(ActionEvent actionEvent) {
+        if (fullLoadService != null && !fullLoadService.isRunning()) {
+            fullLoadService.start();
+        }
     }
 
     private class LoadFolderService extends Service<Void> {
@@ -209,6 +212,20 @@ public class MainWindow extends AbstractUIController {
                 @Override
                 protected ObservableSet<MailMessage> call() throws Exception {
                     return messagesModel.getFolderMessages(mailFolder, storedMessages);
+                }
+            };
+        }
+    }
+
+    private class FullLoadService extends Service<Void> {
+
+        @Override
+        protected Task<Void> createTask() {
+            return new Task<Void>() {
+                @Override
+                protected Void call() throws Exception {
+                    foldersModel.getFolders().forEach(f -> messagesModel.getFolderMessages(f, FXCollections.emptyObservableSet()));
+                    return null;
                 }
             };
         }
