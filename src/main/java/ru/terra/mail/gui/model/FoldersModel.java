@@ -7,6 +7,7 @@ import ru.terra.mail.gui.controller.beans.FoldersTreeItem;
 import ru.terra.mail.storage.domain.MailFolder;
 
 import javax.mail.MessagingException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -66,6 +67,26 @@ public class FoldersModel extends AbstractModel<MailFolder> {
         }
         storedFolders = getStorage().merge(storedFolders, serverFolders);
         return storedFolders;
+    }
+
+    public List<MailFolder> getAllFolders() {
+        List<MailFolder> folders = null;
+        try {
+            folders = getStorage().getRootFolders();
+        } catch (Exception e) {
+            logger.error("unable to get folders", e);
+        }
+        if (folders != null && folders.size() > 0) {
+            folders.addAll(listFolders(folders.get(0)));
+        }
+        return folders;
+    }
+
+    private List<MailFolder> listFolders(MailFolder mailFolder) {
+        List<MailFolder> ret = new ArrayList<>();
+        ret.addAll(mailFolder.getChildFolders());
+        mailFolder.getChildFolders().forEach(mf -> ret.addAll(listFolders(mf)));
+        return ret;
     }
 
 }

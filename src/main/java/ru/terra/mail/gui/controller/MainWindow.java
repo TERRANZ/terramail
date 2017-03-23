@@ -56,6 +56,7 @@ public class MainWindow extends AbstractUIController {
     public void initialize(URL location, ResourceBundle resources) {
         foldersModel = Main.getContext().getBean(FoldersModel.class);
         messagesModel = Main.getContext().getBean(MessagesModel.class);
+        fullLoadService = new FullLoadService();
         setColums();
         showFolders();
     }
@@ -178,6 +179,7 @@ public class MainWindow extends AbstractUIController {
 
     public void fullDownload(ActionEvent actionEvent) {
         if (fullLoadService != null && !fullLoadService.isRunning()) {
+            fullLoadService.reset();
             fullLoadService.start();
         }
     }
@@ -224,7 +226,7 @@ public class MainWindow extends AbstractUIController {
             return new Task<Void>() {
                 @Override
                 protected Void call() throws Exception {
-                    foldersModel.getFolders().forEach(f -> messagesModel.getFolderMessages(f, FXCollections.emptyObservableSet()));
+                    foldersModel.getAllFolders().forEach(f -> messagesModel.getFolderMessages(f, FXCollections.emptyObservableSet()));
                     return null;
                 }
             };
