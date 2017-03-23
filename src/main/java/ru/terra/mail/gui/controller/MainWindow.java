@@ -226,7 +226,7 @@ public class MainWindow extends AbstractUIController {
             return new Task<Void>() {
                 @Override
                 protected Void call() throws Exception {
-                    foldersModel.getAllFolders().forEach(f -> messagesModel.getFolderMessages(f, FXCollections.emptyObservableSet()));
+                    foldersModel.getAllFolders().forEach(messagesModel::loadFromFolder);
                     return null;
                 }
             };

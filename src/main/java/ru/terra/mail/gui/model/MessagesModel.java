@@ -24,4 +24,8 @@ public class MessagesModel extends AbstractModel<MailMessage> {
         getStorage().loadFromFolder(folder);
         return stored;
     }
+
+    public void loadFromFolder(MailFolder folder){
+        getStorage().loadFromFolder(folder);
+    }
 }

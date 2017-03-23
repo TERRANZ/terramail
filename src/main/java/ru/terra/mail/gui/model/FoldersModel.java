@@ -70,15 +70,9 @@ public class FoldersModel extends AbstractModel<MailFolder> {
     }
 
     public List<MailFolder> getAllFolders() {
-        List<MailFolder> folders = null;
-        try {
-            folders = getStorage().getRootFolders();
-        } catch (Exception e) {
-            logger.error("unable to get folders", e);
-        }
-        if (folders != null && folders.size() > 0) {
-            folders.addAll(listFolders(folders.get(0)));
-        }
+        List<MailFolder> folders = new ArrayList<>();
+        folders.add(getTreeRoot().getValue().getMailFolder());
+        folders.addAll(listFolders(folders.get(0)));
         return folders;
     }
 

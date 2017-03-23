@@ -169,7 +169,7 @@ public class ElasticSearchStorage implements AbstractStorage {
             while (start < count) {
                 int end = count - start < 20 ? count - start : 20;
                 logger.info("requesting from " + start + " to " + (start + end));
-                Arrays.stream(folder.getFolder().getMessages(start, end + start)).forEach(m -> service.submit(() -> {
+                Arrays.stream(folder.getFolder().getMessages(start, end + start)).forEach(m -> {
                     try {
                         if (messagesRepo.findByCreateDate(m.getReceivedDate().getTime()) == null) {
                             MailMessage msg = new MailMessage(m, folder);
@@ -179,9 +179,10 @@ public class ElasticSearchStorage implements AbstractStorage {
                     } catch (MessagingException e) {
                         e.printStackTrace();
                     }
-                }));
+                });
                 start += end;
             }
+            folder.getFolder().close(true);
         } catch (Exception e) {
             logger.error("Unable to load messages from server", e);
         }
