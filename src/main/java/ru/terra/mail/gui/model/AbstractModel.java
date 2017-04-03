@@ -8,7 +8,6 @@ import ru.terra.mail.config.MailConfiguration;
 import ru.terra.mail.config.StartUpParameters;
 import ru.terra.mail.core.AbstractMailProtocol;
 import ru.terra.mail.storage.AbstractStorage;
-import ru.terra.mail.storage.Storage;
 
 import javax.mail.MessagingException;
 import java.security.GeneralSecurityException;
@@ -21,7 +20,7 @@ public abstract class AbstractModel<Bean> {
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
     protected AbstractMailProtocol protocol = MailConfiguration.getInstance().getMailProtocol();
     @Autowired
-    private Storage storage;
+    private AbstractStorage storage;
 
     protected void performLogin() throws GeneralSecurityException, MessagingException {
         protocol.login(StartUpParameters.getInstance().getUser(), StartUpParameters.getInstance().getPass(),
@@ -29,6 +28,6 @@ public abstract class AbstractModel<Bean> {
     }
 
     protected AbstractStorage getStorage() {
-        return storage.getStorage();
+        return storage;
     }
 }

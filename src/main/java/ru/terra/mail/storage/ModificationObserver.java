@@ -23,7 +23,7 @@ public class ModificationObserver {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
     private List<ScheduledFuture<?>> checks = new ArrayList<>();
     @Autowired
-    private Storage storage;
+    private AbstractStorage storage;
 
     public Integer startObserve(ObservableSet<MailMessage> messages, MailFolder mailFolder) {
         ScheduledFuture<?> future = scheduler.scheduleAtFixedRate(new ScheduledChecking(messages, mailFolder), 0, 1,
@@ -47,11 +47,11 @@ public class ModificationObserver {
         @Override
         public void run() {
 //            logger.info("Checking folder " + mailFolder.getFullName() + " for modifications");
-            Integer messagesInDb = storage.getStorage().countMessages(mailFolder);
+            Integer messagesInDb = storage.countMessages(mailFolder);
             if (messagesInDb != messages.size()) {
 //                logger.info("Modifications: in db: " + messagesInDb + " <> " + messages.size());
                 messages.clear();
-                messages.addAll(storage.getStorage().getFolderMessages(mailFolder));
+                messages.addAll(storage.getFolderMessages(mailFolder));
             } else {
 //                logger.info("No modifications");
             }

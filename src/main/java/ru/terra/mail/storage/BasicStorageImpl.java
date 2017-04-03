@@ -8,6 +8,7 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import ru.terra.mail.gui.controller.beans.FoldersTreeItem;
 import ru.terra.mail.storage.db.entity.AttachmentEntity;
@@ -36,7 +37,8 @@ import java.util.stream.Collectors;
  * Created by Vadim_Korostelev on 1/24/2017.
  */
 @Component
-public class ElasticSearchStorage implements AbstractStorage {
+@Scope("singleton")
+public class BasicStorageImpl implements AbstractStorage {
     @Autowired
     private FoldersRepo foldersRepo;
     @Autowired
