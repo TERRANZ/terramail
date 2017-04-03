@@ -125,7 +125,7 @@ public class ElasticSearchStorage implements AbstractStorage {
 
     @Override
     public void storeFolderMessage(MailMessage m) {
-        storeFolderMessage(foldersRepo.findByFullName(m.getFolder().getFullName()).getGuid(), m);
+        storeFolderMessage(m.getFolder().getGuid(), m);
     }
 
     @Override
@@ -166,15 +166,19 @@ public class ElasticSearchStorage implements AbstractStorage {
             int start = 1;
             int count = folder.getFolder().getMessageCount();
             logger.info("Count: " + count + " in folder " + folder.getFullName());
+            List<Long> loadedDates = new ArrayList<>();
             while (start < count) {
                 int end = count - start < 20 ? count - start : 20;
                 logger.info("requesting from " + start + " to " + (start + end));
                 Arrays.stream(folder.getFolder().getMessages(start, end + start)).forEach(m -> {
                     try {
+                        loadedDates.add(m.getReceivedDate().getTime());
                         if (messagesRepo.findByCreateDate(m.getReceivedDate().getTime()) == null) {
                             MailMessage msg = new MailMessage(m, folder);
                             processMailMessageAttachments(msg);
                             storeFolderMessage(msg);
+                        } else {
+                            logger.info("Message " + m.getSubject() + " already exists");
                         }
                     } catch (MessagingException e) {
                         e.printStackTrace();
@@ -183,6 +187,10 @@ public class ElasticSearchStorage implements AbstractStorage {
                 start += end;
             }
             folder.getFolder().close(true);
+            List<MessageEntity> allMessages = new LinkedList<>();
+            messagesRepo.findByFolderId(folder.getGuid()).forEach(allMessages::add);
+            logger.info("Messages in folder " + folder.getFullName() + " : " + allMessages.size());
+            allMessages.stream().filter(m -> !loadedDates.contains(m.getCreateDate())).forEach(messagesRepo::delete);
         } catch (Exception e) {
             logger.error("Unable to load messages from server", e);
         }
