@@ -5,8 +5,10 @@ import javafx.application.Application;
 import javafx.stage.Stage;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.stereotype.Component;
 import ru.terra.mail.config.StartUpParameters;
 import ru.terra.mail.gui.StageHelper;
@@ -14,9 +16,11 @@ import ru.terra.mail.gui.StageHelper;
 /**
  * Created by terranz on 18.10.16.
  */
+@SpringBootApplication
 @EnableAutoConfiguration
 @Component
 @ComponentScan
+@EnableJpaRepositories(basePackages = "ru.terra.mail")
 public class Main extends Application {
     public static ConfigurableApplicationContext context;
 

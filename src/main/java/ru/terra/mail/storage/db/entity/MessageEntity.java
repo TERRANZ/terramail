@@ -1,17 +1,17 @@
 package ru.terra.mail.storage.db.entity;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.elasticsearch.annotations.Document;
 import ru.terra.mail.storage.domain.MailMessage;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
 import java.io.Serializable;
 import java.util.UUID;
 
 /**
  * Created by Vadim_Korostelev on 1/24/2017.
  */
-
-@Document(indexName = "mailmessage", type = "mailmessage", shards = 1, replicas = 0)
+@Entity
 public class MessageEntity implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
@@ -22,9 +22,11 @@ public class MessageEntity implements Serializable {
     private String to;
     private String messageBody;
     private String headers;
+    @Column(name = "folder_id")
     private String folderId;
 
     public MessageEntity() {
+        this.guid = UUID.randomUUID().toString();
     }
 
     public MessageEntity(MailMessage m, String folderId) {

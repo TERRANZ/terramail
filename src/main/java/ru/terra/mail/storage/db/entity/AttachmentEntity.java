@@ -1,16 +1,16 @@
 package ru.terra.mail.storage.db.entity;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.elasticsearch.annotations.Document;
+import javax.persistence.Id;
 import ru.terra.mail.storage.domain.MailMessageAttachment;
 
+import javax.persistence.Entity;
 import java.io.Serializable;
 import java.util.UUID;
 
 /**
  * Created by Vadim_Korostelev on 1/24/2017.
  */
-@Document(indexName = "mailattachment", type = "mailattachment", shards = 1, replicas = 0)
+@Entity
 public class AttachmentEntity implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
@@ -21,6 +21,7 @@ public class AttachmentEntity implements Serializable {
     private String messageId;
 
     public AttachmentEntity() {
+        this.guid = UUID.randomUUID().toString();
     }
 
     public AttachmentEntity(MailMessageAttachment mma, String parentId) {
