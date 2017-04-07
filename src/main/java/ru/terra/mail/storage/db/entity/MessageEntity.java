@@ -5,6 +5,7 @@ import ru.terra.mail.storage.domain.MailMessage;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 import java.io.Serializable;
 import java.util.UUID;
 
@@ -18,15 +19,18 @@ public class MessageEntity implements Serializable {
     private String guid;
     private Long createDate;
     private String subject;
+    @Column(name = "from_address")
     private String from;
+    @Column(name = "to_address")
     private String to;
+    @Lob
     private String messageBody;
+    @Lob
     private String headers;
     @Column(name = "folder_id")
     private String folderId;
 
     public MessageEntity() {
-        this.guid = UUID.randomUUID().toString();
     }
 
     public MessageEntity(MailMessage m, String folderId) {

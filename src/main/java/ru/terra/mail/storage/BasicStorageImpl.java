@@ -115,7 +115,7 @@ public class BasicStorageImpl implements AbstractStorage {
     @Override
     public ObservableSet<MailMessage> getFolderMessages(MailFolder mailFolder) {
         return FXCollections.observableSet(messagesRepo
-                .findByFolderId(foldersRepo.findByFullName(mailFolder.getFullName()).getGuid()).stream().map(m -> {
+                .findByFolderId(mailFolder.getGuid()).stream().map(m -> {
                     MailMessage ret = new MailMessage(m, mailFolder);
                     List<AttachmentEntity> attachments = attachmentsRepo.findByMessageId(m.getGuid());
                     if (attachments != null && attachments.size() > 0) {
@@ -131,15 +131,14 @@ public class BasicStorageImpl implements AbstractStorage {
     }
 
     @Override
-    public void storeFolderMessage(String parentId, MailMessage m) {
-        MessageEntity me = new MessageEntity(m, parentId);
+    public void storeFolderMessage(String folderId, MailMessage m) {
+        MessageEntity me = new MessageEntity(m, folderId);
         if (messagesRepo.findByCreateDate(me.getCreateDate()) == null) {
             try {
                 messagesRepo.save(me);
                 logger.info("Created " + me.toString());
                 for (MailMessageAttachment mma : m.getAttachments()) {
-                    AttachmentEntity ae = new AttachmentEntity(mma, me.getGuid());
-                    attachmentsRepo.save(ae);
+                    attachmentsRepo.save(new AttachmentEntity(mma, me.getGuid()));
                 }
             } catch (Exception e) {
                 logger.error("Unable to create new message entity", e);
@@ -155,7 +154,7 @@ public class BasicStorageImpl implements AbstractStorage {
 
     @Override
     public Integer countMessages(MailFolder mailFolder) {
-        return messagesRepo.findByFolderId(foldersRepo.findByFullName(mailFolder.getFullName()).getGuid()).size();
+        return messagesRepo.countByFolderId(mailFolder.getGuid());
     }
 
     @Override
@@ -189,10 +188,10 @@ public class BasicStorageImpl implements AbstractStorage {
                 start += end;
             }
             folder.getFolder().close(true);
-            List<MessageEntity> allMessages = new LinkedList<>();
-            allMessages.addAll(messagesRepo.findByFolderId(folder.getGuid()));
-            logger.info("Messages in folder " + folder.getFullName() + " : " + allMessages.size());
-            allMessages.stream().filter(m -> !loadedDates.contains(m.getCreateDate())).forEach(messagesRepo::delete);
+//            List<MessageEntity> allMessages = new LinkedList<>();
+//            allMessages.addAll(messagesRepo.findByFolderId(folder.getGuid()));
+            logger.info("Messages in folder " + folder.getFullName() + " : " + messagesRepo.countByFolderId(folder.getGuid()));
+//            allMessages.stream().filter(m -> !loadedDates.contains(m.getCreateDate())).forEach(messagesRepo::delete);
         } catch (Exception e) {
             logger.error("Unable to load messages from server", e);
         }

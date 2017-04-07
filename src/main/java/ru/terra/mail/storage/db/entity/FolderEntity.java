@@ -22,7 +22,6 @@ public class FolderEntity implements Serializable {
     private String parentFolderId;
 
     public FolderEntity() {
-        this.guid = UUID.randomUUID().toString();
     }
 
     public FolderEntity(MailFolder f, String parentFolderId) {

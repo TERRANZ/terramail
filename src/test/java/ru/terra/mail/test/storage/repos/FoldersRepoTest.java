@@ -20,7 +20,6 @@ public class FoldersRepoTest {
     @Autowired
     public FoldersRepo repo;
 
-
     @Before
     public void setUp() {
         FolderEntity fe = new FolderEntity();

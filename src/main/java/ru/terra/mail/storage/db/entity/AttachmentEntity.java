@@ -1,9 +1,10 @@
 package ru.terra.mail.storage.db.entity;
 
-import javax.persistence.Id;
 import ru.terra.mail.storage.domain.MailMessageAttachment;
 
 import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Lob;
 import java.io.Serializable;
 import java.util.UUID;
 
@@ -15,13 +16,13 @@ public class AttachmentEntity implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
     private String guid;
+    @Lob
     private byte[] body;
     private String type;
     private String fileName;
     private String messageId;
 
     public AttachmentEntity() {
-        this.guid = UUID.randomUUID().toString();
     }
 
     public AttachmentEntity(MailMessageAttachment mma, String parentId) {
