@@ -11,6 +11,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 import ru.terra.mail.storage.db.entity.FolderEntity;
 import ru.terra.mail.storage.db.repos.FoldersRepo;
 
+import java.util.UUID;
+
 /**
  * Created by Vadim_Korostelev on 4/7/2017.
  */
@@ -23,6 +25,7 @@ public class FoldersRepoTest {
     @Before
     public void setUp() {
         FolderEntity fe = new FolderEntity();
+        fe.setGuid(UUID.randomUUID().toString());
         fe.setFullName("full_name");
         repo.save(fe);
     }

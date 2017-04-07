@@ -11,6 +11,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 import ru.terra.mail.storage.db.entity.AttachmentEntity;
 import ru.terra.mail.storage.db.repos.AttachmentsRepo;
 
+import java.util.UUID;
+
 /**
  * Created by Vadim_Korostelev on 4/7/2017.
  */
@@ -23,6 +25,7 @@ public class AttachmentsRepoTest {
     @Before
     public void setUp() {
         AttachmentEntity ae = new AttachmentEntity();
+        ae.setGuid(UUID.randomUUID().toString());
         ae.setMessageId("msgid");
         repo.save(ae);
     }

@@ -12,6 +12,7 @@ import ru.terra.mail.storage.db.entity.MessageEntity;
 import ru.terra.mail.storage.db.repos.MessagesRepo;
 
 import java.util.Date;
+import java.util.UUID;
 
 /**
  * Created by Vadim_Korostelev on 4/7/2017.
@@ -26,6 +27,7 @@ public class MessagesRepoTest {
     @Before
     public void setUp() {
         MessageEntity me = new MessageEntity();
+        me.setGuid(UUID.randomUUID().toString());
         me.setFolderId("folder_id");
         me.setCreateDate(createTime);
         repo.save(me);
