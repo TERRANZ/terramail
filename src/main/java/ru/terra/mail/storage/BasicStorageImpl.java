@@ -50,7 +50,7 @@ public class BasicStorageImpl implements AbstractStorage {
     private ExecutorService service = Executors.newFixedThreadPool(50);
 
     @Override
-    public ObservableList<MailFolder> getRootFolders() throws Exception {
+    public ObservableList<MailFolder> getAllFoldersTree() throws Exception {
         Map<String, MailFolder> foldersMap = new HashMap<>();
         MailFolder inbox = null;
         Map<String, FolderEntity> storedFoldersMap = new HashMap<>();
@@ -77,7 +77,7 @@ public class BasicStorageImpl implements AbstractStorage {
     }
 
     @Override
-    public void storeFolders(List<MailFolder> mailFolders) {
+    public void storeFoldersTree(List<MailFolder> mailFolders) {
         mailFolders.forEach(f -> {
             try {
                 FolderEntity folderEntity = foldersRepo.findByFullName(f.getFullName());
@@ -127,11 +127,11 @@ public class BasicStorageImpl implements AbstractStorage {
 
     @Override
     public void storeFolderMessage(MailMessage m) {
-        storeFolderMessage(m.getFolder().getGuid(), m);
+        storeFolderMessageInFolder(m.getFolder().getGuid(), m);
     }
 
     @Override
-    public void storeFolderMessage(String folderId, MailMessage m) {
+    public void storeFolderMessageInFolder(String folderId, MailMessage m) {
         MessageEntity me = new MessageEntity(m, folderId);
         if (messagesRepo.findByCreateDate(me.getCreateDate()) == null) {
             try {
@@ -147,14 +147,8 @@ public class BasicStorageImpl implements AbstractStorage {
     }
 
     @Override
-    public void storeFolderMessages(MailFolder mailFolder, List<MailMessage> messages) {
-        String parentId = foldersRepo.findByFullName(mailFolder.getFullName()).getGuid();
-        messages.forEach(m -> storeFolderMessage(parentId, m));
-    }
-
-    @Override
-    public Integer countMessages(MailFolder mailFolder) {
-        return messagesRepo.countByFolderId(mailFolder.getGuid());
+    public Integer countMessagesInFolder(String folderId) {
+        return messagesRepo.countByFolderId(folderId);
     }
 
     @Override
@@ -171,27 +165,23 @@ public class BasicStorageImpl implements AbstractStorage {
             while (start < count) {
                 int end = count - start < 20 ? count - start : 20;
                 logger.info("requesting from " + start + " to " + (start + end));
-                Arrays.stream(folder.getFolder().getMessages(start, end + start)).forEach(m -> {
+                Arrays.stream(folder.getFolder().getMessages(start, end + start)).map(m -> {
                     try {
                         loadedDates.add(m.getReceivedDate().getTime());
                         if (messagesRepo.findByCreateDate(m.getReceivedDate().getTime()) == null) {
                             MailMessage msg = new MailMessage(m, folder);
                             processMailMessageAttachments(msg);
-                            storeFolderMessage(msg);
-                        } else {
-//                            logger.info("Message " + m.getSubject() + " already exists");
+                            return msg;
                         }
                     } catch (MessagingException e) {
                         e.printStackTrace();
                     }
-                });
+                    return null;
+                }).filter(Objects::nonNull).parallel().forEach(this::storeFolderMessage);
                 start += end;
             }
             folder.getFolder().close(true);
-//            List<MessageEntity> allMessages = new LinkedList<>();
-//            allMessages.addAll(messagesRepo.findByFolderId(folder.getGuid()));
             logger.info("Messages in folder " + folder.getFullName() + " : " + messagesRepo.countByFolderId(folder.getGuid()));
-//            allMessages.stream().filter(m -> !loadedDates.contains(m.getCreateDate())).forEach(messagesRepo::delete);
         } catch (Exception e) {
             logger.error("Unable to load messages from server", e);
         }
@@ -228,7 +218,7 @@ public class BasicStorageImpl implements AbstractStorage {
             mergeFoldersTree(storedFolders, serverFoldersMap);
         }
 
-        storeFolders(storedFolders);
+        storeFoldersTree(storedFolders);
         return storedFolders;
     }
 

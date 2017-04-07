@@ -14,9 +14,9 @@ import java.util.Map;
  * Created by Vadim_Korostelev on 1/24/2017.
  */
 public interface AbstractStorage {
-    ObservableList<MailFolder> getRootFolders() throws Exception;
+    ObservableList<MailFolder> getAllFoldersTree() throws Exception;
 
-    void storeFolders(List<MailFolder> mailFolders);
+    void storeFoldersTree(List<MailFolder> mailFolders);
 
     void storeFolders(List<MailFolder> mailFolders, String parentId);
 
@@ -24,11 +24,9 @@ public interface AbstractStorage {
 
     void storeFolderMessage(MailMessage m);
 
-    void storeFolderMessage(String parentId, MailMessage m);
+    void storeFolderMessageInFolder(String parentId, MailMessage m);
 
-    void storeFolderMessages(MailFolder mailFolder, List<MailMessage> messages);
-
-    Integer countMessages(MailFolder mailFolder);
+    Integer countMessagesInFolder(String folderId);
 
     void loadFromFolder(MailFolder folder);
 
