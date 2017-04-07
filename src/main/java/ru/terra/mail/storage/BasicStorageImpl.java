@@ -180,7 +180,7 @@ public class BasicStorageImpl implements AbstractStorage {
                             processMailMessageAttachments(msg);
                             storeFolderMessage(msg);
                         } else {
-                            logger.info("Message " + m.getSubject() + " already exists");
+//                            logger.info("Message " + m.getSubject() + " already exists");
                         }
                     } catch (MessagingException e) {
                         e.printStackTrace();
@@ -190,7 +190,7 @@ public class BasicStorageImpl implements AbstractStorage {
             }
             folder.getFolder().close(true);
             List<MessageEntity> allMessages = new LinkedList<>();
-            messagesRepo.findByFolderId(folder.getGuid()).forEach(allMessages::add);
+            allMessages.addAll(messagesRepo.findByFolderId(folder.getGuid()));
             logger.info("Messages in folder " + folder.getFullName() + " : " + allMessages.size());
             allMessages.stream().filter(m -> !loadedDates.contains(m.getCreateDate())).forEach(messagesRepo::delete);
         } catch (Exception e) {
