@@ -19,6 +19,8 @@ import ru.terra.mail.gui.StageHelper;
 import ru.terra.mail.gui.controller.beans.FoldersTreeItem;
 import ru.terra.mail.gui.controller.beans.MessagesTableItem;
 import ru.terra.mail.gui.core.AbstractUIController;
+import ru.terra.mail.gui.core.NotificationListener;
+import ru.terra.mail.gui.core.NotificationManager;
 import ru.terra.mail.gui.model.FoldersModel;
 import ru.terra.mail.gui.model.MessagesModel;
 import ru.terra.mail.storage.domain.MailFolder;
@@ -32,7 +34,7 @@ import java.util.stream.Collectors;
 /**
  * Created by terranz on 18.10.16.
  */
-public class MainWindow extends AbstractUIController {
+public class MainWindow extends AbstractUIController implements NotificationListener {
     @FXML
     private WebView wvMailViewer;
     private Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -59,6 +61,7 @@ public class MainWindow extends AbstractUIController {
         fullLoadService = new FullLoadService();
         setColums();
         showFolders();
+        NotificationManager.getInstance().addListener(this);
     }
 
     private void setColums() {
@@ -231,5 +234,10 @@ public class MainWindow extends AbstractUIController {
                 }
             };
         }
+    }
+
+    @Override
+    public void notify(String from, String message) {
+        updateStatus(from + " : " + message);
     }
 }

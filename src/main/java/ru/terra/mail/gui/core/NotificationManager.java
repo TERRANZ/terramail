@@ -14,6 +14,10 @@ public class NotificationManager {
 
     }
 
+    public static NotificationManager getInstance() {
+        return instance;
+    }
+
     public void notify(String from, String message) {
         listeners.forEach(l -> l.notify(from, message));
     }

@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import ru.terra.mail.gui.controller.beans.FoldersTreeItem;
+import ru.terra.mail.gui.core.NotificationManager;
 import ru.terra.mail.storage.db.entity.AttachmentEntity;
 import ru.terra.mail.storage.db.entity.FolderEntity;
 import ru.terra.mail.storage.db.entity.MessageEntity;
@@ -29,6 +30,7 @@ import javax.mail.MessagingException;
 import javax.mail.internet.MimeMultipart;
 import java.nio.charset.Charset;
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
@@ -47,7 +49,8 @@ public class BasicStorageImpl implements AbstractStorage {
     private AttachmentsRepo attachmentsRepo;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
-    private ExecutorService service = Executors.newFixedThreadPool(50);
+    private ExecutorService loadService = Executors.newFixedThreadPool(10);
+    private ExecutorService saveService = Executors.newFixedThreadPool(10);
 
     @Override
     public ObservableList<MailFolder> getAllFoldersTree() throws Exception {
@@ -161,25 +164,28 @@ public class BasicStorageImpl implements AbstractStorage {
             int start = 1;
             int count = folder.getFolder().getMessageCount();
             logger.info("Count: " + count + " in folder " + folder.getFullName());
+            CountDownLatch countDownLatch = new CountDownLatch(count);
             List<Long> loadedDates = new ArrayList<>();
             while (start < count) {
                 int end = count - start < 20 ? count - start : 20;
-                logger.info("requesting from " + start + " to " + (start + end));
-                Arrays.stream(folder.getFolder().getMessages(start, end + start)).map(m -> {
+                Arrays.stream(folder.getFolder().getMessages(start, end + start)).forEach(m -> loadService.submit(() -> {
                     try {
                         loadedDates.add(m.getReceivedDate().getTime());
                         if (messagesRepo.findByCreateDate(m.getReceivedDate().getTime()) == null) {
                             MailMessage msg = new MailMessage(m, folder);
                             processMailMessageAttachments(msg);
-                            return msg;
+                            storeFolderMessage(msg);
                         }
                     } catch (MessagingException e) {
                         e.printStackTrace();
+                    } finally {
+                        countDownLatch.countDown();
+                        NotificationManager.getInstance().notify("Storage", "Loading messages folder: " + folder.getFullName() + " remaining " + countDownLatch.getCount() + " of " + count);
                     }
-                    return null;
-                }).filter(Objects::nonNull).parallel().forEach(this::storeFolderMessage);
+                }));
                 start += end;
             }
+            countDownLatch.await();
             folder.getFolder().close(true);
             logger.info("Messages in folder " + folder.getFullName() + " : " + messagesRepo.countByFolderId(folder.getGuid()));
         } catch (Exception e) {
@@ -247,14 +253,14 @@ public class BasicStorageImpl implements AbstractStorage {
         Message msg = mm.getMessage();
         try {
             if (msg.getContent() instanceof MimeMultipart) {
-                MimeMultipart multipart = (MimeMultipart) msg.getContent();
-                for (int j = 0; j < multipart.getCount(); j++) {
-                    BodyPart bodyPart = multipart.getBodyPart(j);
-                    DataHandler handler = bodyPart.getDataHandler();
-                    mm.getAttachments().add(new MailMessageAttachment(
-                            IOUtils.toByteArray(handler.getInputStream()),
-                            handler.getContentType(), handler.getName(), false));
-                }
+//                MimeMultipart multipart = (MimeMultipart) msg.getContent();
+//                for (int j = 0; j < multipart.getCount(); j++) {
+//                    BodyPart bodyPart = multipart.getBodyPart(j);
+//                    DataHandler handler = bodyPart.getDataHandler();
+//                    mm.getAttachments().add(new MailMessageAttachment(
+//                            IOUtils.toByteArray(handler.getInputStream()),
+//                            handler.getContentType(), handler.getName(), false));
+//                }
                 if (msg.getContentType().startsWith("text/html") || msg.getContentType().startsWith("text/plain")) {
                     mm.setMessageBody(IOUtils.toString(msg.getInputStream(), Charset.forName("UTF-8")));
                 }
