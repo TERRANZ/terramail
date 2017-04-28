@@ -14,6 +14,6 @@ public interface MessagesRepo extends PagingAndSortingRepository<MessageEntity, 
 
     MessageEntity findByCreateDate(Long createDate);
 
-    @Query(value = "select count(guid) from message_entity where folder_id=?1", nativeQuery = true)
+    @Query(value = "select count(id) from message_entity where folder_id=?1", nativeQuery = true)
     Integer countByFolderId(String folderId);
 }

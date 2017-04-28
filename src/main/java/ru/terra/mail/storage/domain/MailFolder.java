@@ -23,7 +23,6 @@ public class MailFolder {
     private Boolean deleted;
 
     public MailFolder() {
-        this.guid = UUID.randomUUID().toString();
         this.childFolders = new ArrayList<>();
     }
 

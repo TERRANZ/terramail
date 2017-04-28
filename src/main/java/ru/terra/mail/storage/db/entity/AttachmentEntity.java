@@ -1,10 +1,9 @@
 package ru.terra.mail.storage.db.entity;
 
+import org.hibernate.annotations.GenericGenerator;
 import ru.terra.mail.storage.domain.MailMessageAttachment;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Lob;
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.UUID;
 
@@ -15,6 +14,10 @@ import java.util.UUID;
 public class AttachmentEntity implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
+    @Basic(optional = false)
+    @Column(name = "id", nullable = false, length = 35)
+    @GeneratedValue(generator = "system-uuid")
+    @GenericGenerator(name = "system-uuid", strategy = "uuid")
     private String guid;
     @Lob
     private byte[] body;
@@ -26,7 +29,6 @@ public class AttachmentEntity implements Serializable {
     }
 
     public AttachmentEntity(MailMessageAttachment mma, String parentId) {
-        this.guid = UUID.randomUUID().toString();
         this.messageId = parentId;
         this.body = mma.getBody();
         this.type = mma.getType();

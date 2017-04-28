@@ -22,8 +22,6 @@ import ru.terra.mail.storage.domain.MailFolder;
 import ru.terra.mail.storage.domain.MailMessage;
 import ru.terra.mail.storage.domain.MailMessageAttachment;
 
-import javax.activation.DataHandler;
-import javax.mail.BodyPart;
 import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -164,11 +162,11 @@ public class BasicStorageImpl implements AbstractStorage {
             int start = 1;
             int count = folder.getFolder().getMessageCount();
             logger.info("Count: " + count + " in folder " + folder.getFullName());
-            CountDownLatch countDownLatch = new CountDownLatch(count);
+//            CountDownLatch countDownLatch = new CountDownLatch(count);
             List<Long> loadedDates = new ArrayList<>();
             while (start < count) {
                 int end = count - start < 20 ? count - start : 20;
-                Arrays.stream(folder.getFolder().getMessages(start, end + start)).forEach(m -> loadService.submit(() -> {
+                Arrays.stream(folder.getFolder().getMessages(start, end + start)).forEach(m -> {
                     try {
                         loadedDates.add(m.getReceivedDate().getTime());
                         if (messagesRepo.findByCreateDate(m.getReceivedDate().getTime()) == null) {
@@ -179,17 +177,22 @@ public class BasicStorageImpl implements AbstractStorage {
                     } catch (MessagingException e) {
                         e.printStackTrace();
                     } finally {
-                        countDownLatch.countDown();
-                        NotificationManager.getInstance().notify("Storage", "Loading messages folder: " + folder.getFullName() + " remaining " + countDownLatch.getCount() + " of " + count);
+//                        countDownLatch.countDown();
+                        NotificationManager.getInstance().notify("Storage", "Loading messages folder: " + folder.getFullName() + " loaded " + end + " of " + count);
                     }
-                }));
+                });
                 start += end;
             }
-            countDownLatch.await();
-            folder.getFolder().close(true);
+//            countDownLatch.await();
             logger.info("Messages in folder " + folder.getFullName() + " : " + messagesRepo.countByFolderId(folder.getGuid()));
         } catch (Exception e) {
             logger.error("Unable to load messages from server", e);
+        } finally {
+            try {
+                folder.getFolder().close(true);
+            } catch (MessagingException e) {
+                logger.error("Unable to close folder from server", e);
+            }
         }
     }
 
