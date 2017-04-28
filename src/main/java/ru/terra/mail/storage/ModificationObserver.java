@@ -49,7 +49,7 @@ public class ModificationObserver {
             Integer messagesInDb = storage.countMessagesInFolder(mailFolder.getGuid());
             if (messagesInDb != messages.size()) {
                 messages.clear();
-                messages.addAll(storage.getFolderMessages(mailFolder));
+                messages.addAll(storage.getFolderMessages(mailFolder.getGuid()));
             }
         }
     }

@@ -28,7 +28,6 @@ import javax.mail.MessagingException;
 import javax.mail.internet.MimeMultipart;
 import java.nio.charset.Charset;
 import java.util.*;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
@@ -78,57 +77,36 @@ public class BasicStorageImpl implements AbstractStorage {
     }
 
     @Override
-    public void storeFoldersTree(List<MailFolder> mailFolders) {
-        mailFolders.forEach(f -> {
-            try {
-                FolderEntity folderEntity = foldersRepo.findByFullName(f.getFullName());
-                if (folderEntity == null) {
-                    folderEntity = new FolderEntity(f, "-1");
-                } else {
-                    folderEntity.setUnreadMessages(f.getUnreadMessages());
-                }
-                foldersRepo.save(folderEntity);
-                storeFolders(f.getChildFolders(), folderEntity.getGuid());
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
-    }
-
-    @Override
     public void storeFolders(List<MailFolder> mailFolders, String parentId) {
-        mailFolders.forEach(f -> {
-            try {
-                FolderEntity folderEntity = foldersRepo.findByFullName(f.getFullName());
-                if (folderEntity == null) {
-                    folderEntity = new FolderEntity(f, parentId);
-                } else {
-                    folderEntity.setUnreadMessages(f.getUnreadMessages());
+        if (mailFolders != null) {
+            mailFolders.forEach(f -> {
+                try {
+                    FolderEntity folderEntity = foldersRepo.findByFullName(f.getFullName());
+                    if (folderEntity == null) {
+                        folderEntity = new FolderEntity(f, parentId);
+                    } else {
+                        folderEntity.setUnreadMessages(f.getUnreadMessages());
+                    }
+                    foldersRepo.save(folderEntity);
+                    storeFolders(f.getChildFolders(), folderEntity.getGuid());
+                } catch (Exception e) {
+                    logger.error("Unable to load folder: " + f.getFullName(), e);
                 }
-                foldersRepo.save(folderEntity);
-                storeFolders(f.getChildFolders(), folderEntity.getGuid());
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
+            });
+        }
     }
 
     @Override
-    public ObservableSet<MailMessage> getFolderMessages(MailFolder mailFolder) {
+    public ObservableSet<MailMessage> getFolderMessages(String folderGuid) {
         return FXCollections.observableSet(messagesRepo
-                .findByFolderId(mailFolder.getGuid()).stream().map(m -> {
-                    MailMessage ret = new MailMessage(m, mailFolder);
+                .findByFolderId(folderGuid).stream().map(m -> {
+                    MailMessage ret = new MailMessage(m, folderGuid);
                     List<AttachmentEntity> attachments = attachmentsRepo.findByMessageId(m.getGuid());
                     if (attachments != null && attachments.size() > 0) {
                         attachments.forEach(a -> ret.getAttachments().add(new MailMessageAttachment(a)));
                     }
                     return ret;
                 }).collect(Collectors.toSet()));
-    }
-
-    @Override
-    public void storeFolderMessage(MailMessage m) {
-        storeFolderMessageInFolder(m.getFolder().getGuid(), m);
     }
 
     @Override
@@ -162,7 +140,6 @@ public class BasicStorageImpl implements AbstractStorage {
             int start = 1;
             int count = folder.getFolder().getMessageCount();
             logger.info("Count: " + count + " in folder " + folder.getFullName());
-//            CountDownLatch countDownLatch = new CountDownLatch(count);
             List<Long> loadedDates = new ArrayList<>();
             while (start < count) {
                 int end = count - start < 20 ? count - start : 20;
@@ -170,20 +147,18 @@ public class BasicStorageImpl implements AbstractStorage {
                     try {
                         loadedDates.add(m.getReceivedDate().getTime());
                         if (messagesRepo.findByCreateDate(m.getReceivedDate().getTime()) == null) {
-                            MailMessage msg = new MailMessage(m, folder);
+                            MailMessage msg = new MailMessage(m, folder.getGuid());
                             processMailMessageAttachments(msg);
-                            storeFolderMessage(msg);
+                            storeFolderMessageInFolder(msg.getFolderGuid(), msg);
                         }
                     } catch (MessagingException e) {
                         e.printStackTrace();
                     } finally {
-//                        countDownLatch.countDown();
                         NotificationManager.getInstance().notify("Storage", "Loading messages folder: " + folder.getFullName() + " loaded " + end + " of " + count);
                     }
                 });
                 start += end;
             }
-//            countDownLatch.await();
             logger.info("Messages in folder " + folder.getFullName() + " : " + messagesRepo.countByFolderId(folder.getGuid()));
         } catch (Exception e) {
             logger.error("Unable to load messages from server", e);
@@ -227,7 +202,7 @@ public class BasicStorageImpl implements AbstractStorage {
             mergeFoldersTree(storedFolders, serverFoldersMap);
         }
 
-        storeFoldersTree(storedFolders);
+        storeFolders(storedFolders, "-1");
         return storedFolders;
     }
 

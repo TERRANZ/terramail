@@ -10,21 +10,14 @@ import ru.terra.mail.storage.domain.MailMessage;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Created by Vadim_Korostelev on 1/24/2017.
- */
 public interface AbstractStorage {
     ObservableList<MailFolder> getAllFoldersTree() throws Exception;
 
-    void storeFoldersTree(List<MailFolder> mailFolders);
-
     void storeFolders(List<MailFolder> mailFolders, String parentId);
 
-    ObservableSet<MailMessage> getFolderMessages(MailFolder mailFolder);
+    ObservableSet<MailMessage> getFolderMessages(String folderGuid);
 
-    void storeFolderMessage(MailMessage m);
-
-    void storeFolderMessageInFolder(String parentId, MailMessage m);
+    void storeFolderMessageInFolder(String folderId, MailMessage m);
 
     Integer countMessagesInFolder(String folderId);
 

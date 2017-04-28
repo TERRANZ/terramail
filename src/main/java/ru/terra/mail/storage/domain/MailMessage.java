@@ -21,8 +21,7 @@ public class MailMessage {
     private String messageBody;
     private List<MailMessageAttachment> attachments;
     private String guid;
-    @JsonIgnore
-    private MailFolder folder;
+    private String folderGuid;
     @JsonIgnore
     private Message message;
     private String headers;
@@ -31,10 +30,10 @@ public class MailMessage {
         guid = UUID.randomUUID().toString();
     }
 
-    public MailMessage(Message msg, MailFolder mailFolder) {
+    public MailMessage(Message msg, String folderGuid) {
         LoggerFactory.getLogger(this.getClass()).info("Generating mail message from transport message");
         this.guid = UUID.randomUUID().toString();
-        this.folder = mailFolder;
+        this.folderGuid = folderGuid;
         try {
             this.subject = msg.getSubject();
             this.createDate = msg.getReceivedDate();
@@ -54,9 +53,9 @@ public class MailMessage {
         this.attachments = new ArrayList<>();
     }
 
-    public MailMessage(MessageEntity me, MailFolder mf) {
+    public MailMessage(MessageEntity me, String folderGuid) {
         this.guid = UUID.randomUUID().toString();
-        this.folder = mf;
+        this.folderGuid = folderGuid;
         this.subject = me.getSubject();
         this.createDate = new Date(me.getCreateDate());
         this.from = me.getFrom();
@@ -66,12 +65,12 @@ public class MailMessage {
         this.headers = me.getHeaders();
     }
 
-    public MailFolder getFolder() {
-        return folder;
+    public String getFolderGuid() {
+        return folderGuid;
     }
 
-    public void setFolder(MailFolder folder) {
-        this.folder = folder;
+    public void setFolderGuid(String folderGuid) {
+        this.folderGuid = folderGuid;
     }
 
     public Date getCreateDate() {

@@ -135,7 +135,7 @@ public class MainWindow extends AbstractUIController implements NotificationList
     private void showMessages(MailFolder mailFolder) {
         updateStatus(mailFolder.getFullName());
         updateStatus("Messages loading");
-        ObservableSet<MailMessage> storedMessages = messagesModel.getStoredMessages(mailFolder);
+        ObservableSet<MailMessage> storedMessages = messagesModel.getStoredMessages(mailFolder.getGuid());
         ObservableList<MessagesTableItem> displayItems = FXCollections.observableArrayList();
         if (storedMessages != null && storedMessages.size() > 0) {
             displayItems.addAll(storedMessages.stream().map(MessagesTableItem::new).collect(Collectors.toList()));

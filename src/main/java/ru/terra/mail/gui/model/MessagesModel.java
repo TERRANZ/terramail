@@ -15,8 +15,8 @@ public class MessagesModel extends AbstractModel<MailMessage> {
     @Autowired
     private ModificationObserver modificationObserver;
 
-    public ObservableSet<MailMessage> getStoredMessages(MailFolder folder) {
-        return getStorage().getFolderMessages(folder);
+    public ObservableSet<MailMessage> getStoredMessages(String folderGuid) {
+        return getStorage().getFolderMessages(folderGuid);
     }
 
     public ObservableSet<MailMessage> getFolderMessages(MailFolder folder, ObservableSet<MailMessage> stored) {
