@@ -229,7 +229,7 @@ public class MainWindow extends AbstractUIController implements NotificationList
             return new Task<Void>() {
                 @Override
                 protected Void call() throws Exception {
-                    foldersModel.getAllFolders().forEach(messagesModel::loadFromFolder);
+                    foldersModel.getAllFolders().parallelStream().forEach(messagesModel::loadFromFolder);
                     return null;
                 }
             };

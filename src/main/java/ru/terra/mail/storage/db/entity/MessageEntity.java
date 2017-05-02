@@ -20,6 +20,7 @@ public class MessageEntity implements Serializable {
     @GenericGenerator(name = "system-uuid", strategy = "uuid")
     private String guid;
     private Long createDate;
+    @Lob
     private String subject;
     @Column(name = "from_address")
     private String from;
