@@ -140,12 +140,22 @@ public class BasicStorageImpl implements AbstractStorage {
             int start = 1;
             int count = folder.getFolder().getMessageCount();
             logger.info("Count: " + count + " in folder " + folder.getFullName());
-            List<Long> loadedDates = new ArrayList<>();
             while (start < count) {
-                int end = count - start < 20 ? count - start : 20;
+                int end = count - start < 100 ? count - start : 100;
+                Map<Long, Message> messages = new HashMap<>();
                 Arrays.stream(folder.getFolder().getMessages(start, end + start)).forEach(m -> {
                     try {
-                        loadedDates.add(m.getReceivedDate().getTime());
+                        messages.put(m.getReceivedDate().getTime(), m);
+                    } catch (MessagingException e) {
+                        e.printStackTrace();
+                    }
+                });
+
+                messagesRepo.findByDatesInList(messages.keySet()).forEach(m -> messages.remove(m.getCreateDate()));
+                NotificationManager.getInstance().notify("Storage", "Loading messages folder: " + folder.getFullName() + " loaded " + (end + start) + " of " + count);
+                messages.values().forEach(m -> {
+
+                    try {
                         if (messagesRepo.findByCreateDate(m.getReceivedDate().getTime()) == null) {
                             MailMessage msg = new MailMessage(m, folder.getGuid());
                             processMailMessageAttachments(msg);
@@ -153,10 +163,9 @@ public class BasicStorageImpl implements AbstractStorage {
                         }
                     } catch (MessagingException e) {
                         e.printStackTrace();
-                    } finally {
-                        NotificationManager.getInstance().notify("Storage", "Loading messages folder: " + folder.getFullName() + " loaded " + end + " of " + count);
                     }
                 });
+
                 start += end;
             }
             logger.info("Messages in folder " + folder.getFullName() + " : " + messagesRepo.countByFolderId(folder.getGuid()));

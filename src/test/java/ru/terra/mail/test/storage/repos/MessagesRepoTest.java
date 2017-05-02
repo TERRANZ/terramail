@@ -12,6 +12,8 @@ import ru.terra.mail.storage.db.entity.MessageEntity;
 import ru.terra.mail.storage.db.repos.MessagesRepo;
 
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -51,5 +53,17 @@ public class MessagesRepoTest {
     @Test
     public void countByFolderIdTest() {
         Assert.assertEquals(Integer.valueOf(1), repo.countByFolderId("folder_id"));
+    }
+
+    @Test
+    public void findByDatesInListTest() {
+        Set<Long> dates = new HashSet<>();
+        dates.add(123L);
+
+        Assert.assertEquals(0, repo.findByDatesInList(dates).size());
+
+        dates.clear();
+        dates.add(createTime);
+        Assert.assertEquals(1, repo.findByDatesInList(dates).size());
     }
 }

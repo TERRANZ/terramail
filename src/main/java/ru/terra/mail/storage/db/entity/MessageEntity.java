@@ -5,12 +5,14 @@ import ru.terra.mail.storage.domain.MailMessage;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.UUID;
 
 /**
  * Created by Vadim_Korostelev on 1/24/2017.
  */
 @Entity
+@Table(name = "message_entity",
+        indexes = {@Index(columnList = "createDate")}
+)
 public class MessageEntity implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
@@ -22,8 +24,10 @@ public class MessageEntity implements Serializable {
     private Long createDate;
     @Lob
     private String subject;
+    @Lob
     @Column(name = "from_address")
     private String from;
+    @Lob
     @Column(name = "to_address")
     private String to;
     @Lob
