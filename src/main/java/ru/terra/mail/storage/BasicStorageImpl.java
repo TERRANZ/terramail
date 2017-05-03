@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import ru.terra.mail.config.StartUpParameters;
 import ru.terra.mail.gui.controller.beans.FoldersTreeItem;
 import ru.terra.mail.gui.core.NotificationManager;
 import ru.terra.mail.storage.db.entity.AttachmentEntity;
@@ -28,7 +29,9 @@ import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMultipart;
+import java.io.File;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -239,9 +242,17 @@ public class BasicStorageImpl implements AbstractStorage {
                 for (int j = 0; j < multipart.getCount(); j++) {
                     BodyPart bodyPart = multipart.getBodyPart(j);
                     DataHandler handler = bodyPart.getDataHandler();
+                    String targetFileName = StartUpParameters.getInstance().getAttachments() + File.separator + mm.getFolderGuid() + File.separator + mm.getGuid();
                     mm.getAttachments().add(new MailMessageAttachment(
-                            IOUtils.toByteArray(handler.getInputStream()),
-                            handler.getContentType(), handler.getName(), false));
+                            handler.getContentType(),
+                            handler.getName(),
+                            targetFileName + File.separator + "attachment_" + String.valueOf(j),
+                            true)
+                    );
+                    File targetFile = new File(targetFileName);
+                    if (!targetFile.exists())
+                        targetFile.mkdirs();
+                    Files.copy(handler.getInputStream(), new File(targetFile + File.separator + "attachment_" + String.valueOf(j)).toPath());
                 }
                 if (msg.getContentType().startsWith("text/html") || msg.getContentType().startsWith("text/plain")) {
                     mm.setMessageBody(IOUtils.toString(msg.getInputStream(), Charset.forName("UTF-8")));

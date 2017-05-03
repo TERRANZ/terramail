@@ -5,7 +5,6 @@ import ru.terra.mail.storage.domain.MailMessageAttachment;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.UUID;
 
 /**
  * Created by Vadim_Korostelev on 1/24/2017.
@@ -15,24 +14,23 @@ public class AttachmentEntity implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
-    @Column(name = "id", nullable = false, length = 35)
+    @Column(name = "id", nullable = false)
     @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name = "system-uuid", strategy = "uuid")
+    @GenericGenerator(name = "system-uuid", strategy = "org.hibernate.id.UUIDGenerator")
     private String guid;
-    @Lob
-    private byte[] body;
     private String type;
     private String fileName;
     private String messageId;
+    private String localFileName;
 
     public AttachmentEntity() {
     }
 
     public AttachmentEntity(MailMessageAttachment mma, String parentId) {
         this.messageId = parentId;
-        this.body = mma.getBody();
         this.type = mma.getType();
         this.fileName = mma.getFileName();
+        this.localFileName = mma.getLocalFileName();
     }
 
     public String getMessageId() {
@@ -51,14 +49,6 @@ public class AttachmentEntity implements Serializable {
         this.guid = guid;
     }
 
-    public byte[] getBody() {
-        return body;
-    }
-
-    public void setBody(byte[] body) {
-        this.body = body;
-    }
-
     public String getType() {
         return type;
     }
@@ -73,5 +63,13 @@ public class AttachmentEntity implements Serializable {
 
     public void setFileName(String fileName) {
         this.fileName = fileName;
+    }
+
+    public String getLocalFileName() {
+        return localFileName;
+    }
+
+    public void setLocalFileName(String localFileName) {
+        this.localFileName = localFileName;
     }
 }

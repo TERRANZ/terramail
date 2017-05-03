@@ -13,6 +13,8 @@ public class StartUpParameters {
     private String pass = "test";
     @Parameter(names = {"-s", "--serv"}, description = "Mail server address")
     private String serv = "test";
+    @Parameter(names = {"-a"}, description = "Attachments folder")
+    private String attachments = "attachments";
 
     private StartUpParameters() {
     }
@@ -43,5 +45,13 @@ public class StartUpParameters {
 
     public void setServ(String serv) {
         this.serv = serv;
+    }
+
+    public String getAttachments() {
+        return attachments;
+    }
+
+    public void setAttachments(String attachments) {
+        this.attachments = attachments;
     }
 }

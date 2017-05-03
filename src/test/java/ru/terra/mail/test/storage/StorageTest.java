@@ -168,7 +168,6 @@ public class StorageTest {
         MailMessageAttachment attachment = new MailMessageAttachment();
         attachment.setType("type");
         attachment.setFileName("fn1");
-        attachment.setBody(String.valueOf("awd").getBytes());
 
         mm.setAttachments(Collections.singletonList(attachment));
 

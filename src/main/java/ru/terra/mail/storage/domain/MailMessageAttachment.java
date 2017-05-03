@@ -6,33 +6,24 @@ import ru.terra.mail.storage.db.entity.AttachmentEntity;
  * Created by terranz on 20.10.16.
  */
 public class MailMessageAttachment {
-    private byte[] body;
     private String type;
     private String fileName;
     private Boolean downloaded;
+    private String localFileName;
 
     public MailMessageAttachment() {
     }
 
-    public MailMessageAttachment(byte[] body, String type, String fileName, Boolean downloaded) {
-        this.body = body;
+    public MailMessageAttachment(String type, String fileName, String localFileName, Boolean downloaded) {
         this.type = type;
         this.fileName = fileName;
+        this.localFileName = localFileName;
         this.downloaded = downloaded;
     }
 
     public MailMessageAttachment(AttachmentEntity a) {
-        this.body = a.getBody();
         this.type = a.getType();
         this.fileName = a.getFileName();
-    }
-
-    public byte[] getBody() {
-        return body;
-    }
-
-    public void setBody(byte[] body) {
-        this.body = body;
     }
 
     public String getType() {
@@ -49,5 +40,21 @@ public class MailMessageAttachment {
 
     public void setFileName(String fileName) {
         this.fileName = fileName;
+    }
+
+    public Boolean getDownloaded() {
+        return downloaded;
+    }
+
+    public void setDownloaded(Boolean downloaded) {
+        this.downloaded = downloaded;
+    }
+
+    public String getLocalFileName() {
+        return localFileName;
+    }
+
+    public void setLocalFileName(String localFileName) {
+        this.localFileName = localFileName;
     }
 }

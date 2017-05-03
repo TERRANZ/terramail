@@ -20,6 +20,7 @@ public class ImapProtocol extends AbstractMailProtocol {
         sf.setTrustAllHosts(true);
         props.put("mail.imaps.ssl.enable", "true");
         props.put("mail.imaps.ssl.socketFactory", sf);
+        props.put("mail.mime.ignoreunknownencoding", "true");//ignore Unknown encoding: 8-bit exception
         Session session = Session.getInstance(props, null);
         this.store = session.getStore();
         store.connect(server, user, pass);

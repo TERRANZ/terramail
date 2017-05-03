@@ -99,7 +99,7 @@ public class MainWindow extends AbstractUIController implements NotificationList
                             msg.getAttachments().stream()
                                     .filter(attachment -> attachment.getType().contains("text/html"))
                                     .forEach(attachment -> wvMailViewer.getEngine()
-                                            .loadContent(new String(attachment.getBody())));
+                                            .loadContent(msg.getMessageBody()));
                         }
                     }
                 }
