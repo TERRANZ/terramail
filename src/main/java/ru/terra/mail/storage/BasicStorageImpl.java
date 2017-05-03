@@ -22,6 +22,8 @@ import ru.terra.mail.storage.domain.MailFolder;
 import ru.terra.mail.storage.domain.MailMessage;
 import ru.terra.mail.storage.domain.MailMessageAttachment;
 
+import javax.activation.DataHandler;
+import javax.mail.BodyPart;
 import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -154,16 +156,9 @@ public class BasicStorageImpl implements AbstractStorage {
                 messagesRepo.findByDatesInList(messages.keySet()).forEach(m -> messages.remove(m.getCreateDate()));
                 NotificationManager.getInstance().notify("Storage", "Loading messages folder: " + folder.getFullName() + " loaded " + (end + start) + " of " + count);
                 messages.values().forEach(m -> {
-
-                    try {
-                        if (messagesRepo.findByCreateDate(m.getReceivedDate().getTime()) == null) {
-                            MailMessage msg = new MailMessage(m, folder.getGuid());
-                            processMailMessageAttachments(msg);
-                            storeFolderMessageInFolder(msg.getFolderGuid(), msg);
-                        }
-                    } catch (MessagingException e) {
-                        e.printStackTrace();
-                    }
+                    MailMessage msg = new MailMessage(m, folder.getGuid());
+                    processMailMessageAttachments(msg);
+                    storeFolderMessageInFolder(msg.getFolderGuid(), msg);
                 });
 
                 start += end;
@@ -240,14 +235,14 @@ public class BasicStorageImpl implements AbstractStorage {
         Message msg = mm.getMessage();
         try {
             if (msg.getContent() instanceof MimeMultipart) {
-//                MimeMultipart multipart = (MimeMultipart) msg.getContent();
-//                for (int j = 0; j < multipart.getCount(); j++) {
-//                    BodyPart bodyPart = multipart.getBodyPart(j);
-//                    DataHandler handler = bodyPart.getDataHandler();
-//                    mm.getAttachments().add(new MailMessageAttachment(
-//                            IOUtils.toByteArray(handler.getInputStream()),
-//                            handler.getContentType(), handler.getName(), false));
-//                }
+                MimeMultipart multipart = (MimeMultipart) msg.getContent();
+                for (int j = 0; j < multipart.getCount(); j++) {
+                    BodyPart bodyPart = multipart.getBodyPart(j);
+                    DataHandler handler = bodyPart.getDataHandler();
+                    mm.getAttachments().add(new MailMessageAttachment(
+                            IOUtils.toByteArray(handler.getInputStream()),
+                            handler.getContentType(), handler.getName(), false));
+                }
                 if (msg.getContentType().startsWith("text/html") || msg.getContentType().startsWith("text/plain")) {
                     mm.setMessageBody(IOUtils.toString(msg.getInputStream(), Charset.forName("UTF-8")));
                 }
