@@ -1,7 +1,6 @@
 package ru.terra.mail.storage.domain;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
-import org.slf4j.LoggerFactory;
 import ru.terra.mail.storage.db.entity.MessageEntity;
 
 import javax.mail.Header;
@@ -31,7 +30,7 @@ public class MailMessage {
     }
 
     public MailMessage(Message msg, String folderGuid) {
-        LoggerFactory.getLogger(this.getClass()).info("Generating mail message from transport message");
+//        LoggerFactory.getLogger(this.getClass()).info("Generating mail message from transport message");
         this.guid = UUID.randomUUID().toString();
         this.folderGuid = folderGuid;
         try {

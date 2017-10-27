@@ -29,6 +29,8 @@ import ru.terra.mail.storage.domain.MailMessage;
 import java.net.URL;
 import java.util.Date;
 import java.util.ResourceBundle;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 /**
@@ -229,7 +231,9 @@ public class MainWindow extends AbstractUIController implements NotificationList
             return new Task<Void>() {
                 @Override
                 protected Void call() throws Exception {
-                    foldersModel.getAllFolders().stream().forEach(messagesModel::loadFromFolder);
+                    ExecutorService saverService = Executors.newFixedThreadPool(10);
+                    foldersModel.getAllFolders().forEach(f -> saverService.submit(() -> messagesModel.loadFromFolder(f)));
+                    saverService.shutdown();
                     return null;
                 }
             };

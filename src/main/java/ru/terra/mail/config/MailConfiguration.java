@@ -2,6 +2,7 @@ package ru.terra.mail.config;
 
 import ru.terra.mail.core.AbstractMailProtocol;
 import ru.terra.mail.core.prot.imap.ImapProtocol;
+import ru.terra.mail.core.prot.pop.PopProtocol;
 
 /**
  * Created by terranz on 19.10.16.
@@ -17,6 +18,10 @@ public class MailConfiguration {
     }
 
     public AbstractMailProtocol getMailProtocol() {
-        return new ImapProtocol();
+        if (StartUpParameters.getInstance().getProtocol().equals("imap")) {
+            return new ImapProtocol();
+        } else {
+            return new PopProtocol();
+        }
     }
 }

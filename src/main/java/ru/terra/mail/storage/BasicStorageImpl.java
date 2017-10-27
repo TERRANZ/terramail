@@ -40,6 +40,8 @@ import java.util.stream.Collectors;
 @Component
 @Scope("singleton")
 public class BasicStorageImpl implements AbstractStorage {
+    private static final int PAGE_SIZE = 10;
+
     @Autowired
     private FoldersRepo foldersRepo;
     @Autowired
@@ -115,7 +117,7 @@ public class BasicStorageImpl implements AbstractStorage {
         if (messagesRepo.findByCreateDate(me.getCreateDate()) == null) {
             try {
                 messagesRepo.save(me);
-                logger.info("Created " + me.toString());
+//                logger.info("Created " + me.toString());
                 for (MailMessageAttachment mma : m.getAttachments()) {
                     attachmentsRepo.save(new AttachmentEntity(mma, me.getGuid()));
                 }
@@ -141,7 +143,7 @@ public class BasicStorageImpl implements AbstractStorage {
             int count = folder.getFolder().getMessageCount();
             logger.info("Count: " + count + " in folder " + folder.getFullName());
             while (start < count) {
-                int end = count - start < 100 ? count - start : 100;
+                int end = count - start < PAGE_SIZE ? count - start : PAGE_SIZE;
                 Map<Long, Message> messages = new HashMap<>();
                 Arrays.stream(folder.getFolder().getMessages(start, end + start)).forEach(m -> {
                     try {
@@ -153,7 +155,7 @@ public class BasicStorageImpl implements AbstractStorage {
 
                 messagesRepo.findByDatesInList(messages.keySet()).forEach(m -> messages.remove(m.getCreateDate()));
                 NotificationManager.getInstance().notify("Storage", "Loading messages folder: " + folder.getFullName() + " loaded " + (end + start) + " of " + count);
-                messages.values().forEach(m -> {
+                messages.values().parallelStream().forEach(m -> {
                     MailMessage msg = new MailMessage(m, folder.getGuid());
                     processMailMessageAttachments(msg);
                     storeFolderMessageInFolder(msg.getFolderGuid(), msg);
@@ -243,9 +245,9 @@ public class BasicStorageImpl implements AbstractStorage {
                             handler.getContentType(),
                             handler.getName(),
                             targetFileName + File.separator + "attachment_" + String.valueOf(j),
-                            true)
+                            false)
                     );
-                    ArchiveWorker.getInstance().saveAttachment(targetFileName, targetFileName + File.separator + "attachment_" + String.valueOf(j), handler.getInputStream());
+//                    ArchiveWorker.getInstance().saveAttachment(targetFileName, targetFileName + File.separator + "attachment_" + String.valueOf(j), handler.getInputStream());
                 }
                 if (msg.getContentType().startsWith("text/html") || msg.getContentType().startsWith("text/plain")) {
                     mm.setMessageBody(IOUtils.toString(msg.getInputStream(), Charset.forName("UTF-8")));

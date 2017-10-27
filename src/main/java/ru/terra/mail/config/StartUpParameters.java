@@ -15,6 +15,8 @@ public class StartUpParameters {
     private String serv = "test";
     @Parameter(names = {"-a"}, description = "Attachments folder")
     private String attachments = "attachments";
+    @Parameter(names = {"-t"}, description = "Protocol, imap/pop")
+    private String protocol = "imap";
 
     private StartUpParameters() {
     }
@@ -53,5 +55,13 @@ public class StartUpParameters {
 
     public void setAttachments(String attachments) {
         this.attachments = attachments;
+    }
+
+    public String getProtocol() {
+        return protocol;
+    }
+
+    public void setProtocol(String protocol) {
+        this.protocol = protocol;
     }
 }
