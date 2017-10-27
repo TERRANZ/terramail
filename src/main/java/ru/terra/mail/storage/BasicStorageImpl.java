@@ -31,10 +31,7 @@ import javax.mail.MessagingException;
 import javax.mail.internet.MimeMultipart;
 import java.io.File;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 /**
@@ -51,8 +48,6 @@ public class BasicStorageImpl implements AbstractStorage {
     private AttachmentsRepo attachmentsRepo;
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
-    private ExecutorService loadService = Executors.newFixedThreadPool(10);
-    private ExecutorService saveService = Executors.newFixedThreadPool(10);
 
     @Override
     public ObservableList<MailFolder> getAllFoldersTree() throws Exception {
@@ -162,6 +157,7 @@ public class BasicStorageImpl implements AbstractStorage {
                     MailMessage msg = new MailMessage(m, folder.getGuid());
                     processMailMessageAttachments(msg);
                     storeFolderMessageInFolder(msg.getFolderGuid(), msg);
+                    ArchiveWorker.getInstance().close();
                 });
 
                 start += end;
@@ -249,10 +245,7 @@ public class BasicStorageImpl implements AbstractStorage {
                             targetFileName + File.separator + "attachment_" + String.valueOf(j),
                             true)
                     );
-                    File targetFile = new File(targetFileName);
-                    if (!targetFile.exists())
-                        targetFile.mkdirs();
-                    Files.copy(handler.getInputStream(), new File(targetFile + File.separator + "attachment_" + String.valueOf(j)).toPath());
+                    ArchiveWorker.getInstance().saveAttachment(targetFileName, targetFileName + File.separator + "attachment_" + String.valueOf(j), handler.getInputStream());
                 }
                 if (msg.getContentType().startsWith("text/html") || msg.getContentType().startsWith("text/plain")) {
                     mm.setMessageBody(IOUtils.toString(msg.getInputStream(), Charset.forName("UTF-8")));
