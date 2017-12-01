@@ -90,9 +90,10 @@ public class BasicStorageImpl implements AbstractStorage {
                         folderEntity.setUnreadMessages(f.getUnreadMessages());
                     }
                     foldersRepo.save(folderEntity);
+                    f.setGuid(folderEntity.getGuid());
                     storeFolders(f.getChildFolders(), folderEntity.getGuid());
                 } catch (Exception e) {
-                    logger.error("Unable to load folder: " + f.getFullName(), e);
+                    logger.error("Unable to load folder: " + f, e);
                 }
             });
         }

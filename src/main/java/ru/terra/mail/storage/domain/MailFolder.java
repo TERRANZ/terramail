@@ -30,7 +30,6 @@ public class MailFolder {
         this.name = folder.getName();
         this.fullName = folder.getFullName();
         this.childFolders = new ArrayList<>();
-        this.guid = UUID.randomUUID().toString();
         this.folder = folder;
         try {
             this.unreadMessages = folder.getUnreadMessageCount();
@@ -102,5 +101,18 @@ public class MailFolder {
 
     public void setDeleted(Boolean deleted) {
         this.deleted = deleted;
+    }
+
+    @Override
+    public String toString() {
+        return "MailFolder{" +
+                "guid='" + guid + '\'' +
+                ", childFolders=" + childFolders +
+                ", name='" + name + '\'' +
+                ", fullName='" + fullName + '\'' +
+                ", unreadMessages=" + unreadMessages +
+                ", folder=" + folder +
+                ", deleted=" + deleted +
+                '}';
     }
 }

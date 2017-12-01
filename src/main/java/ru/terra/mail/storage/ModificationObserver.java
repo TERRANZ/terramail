@@ -24,12 +24,14 @@ public class ModificationObserver {
     private List<ScheduledFuture<?>> checks = new ArrayList<>();
     @Autowired
     private AbstractStorage storage;
+    private int checkCounts = 0;
 
     public Integer startObserve(ObservableSet<MailMessage> messages, MailFolder mailFolder) {
         ScheduledFuture<?> future = scheduler.scheduleAtFixedRate(new ScheduledChecking(messages, mailFolder), 0, 1,
                 TimeUnit.SECONDS);
         checks.forEach(sf -> sf.cancel(true));//TODO: hmm
         checks.clear();
+        checkCounts = 0;
         checks.add(future);
         return checks.indexOf(future);
     }
@@ -50,7 +52,9 @@ public class ModificationObserver {
             if (messagesInDb != messages.size()) {
                 messages.clear();
                 messages.addAll(storage.getFolderMessages(mailFolder.getGuid()));
-            }
+            } else checkCounts++;
+            if (checkCounts == 5)
+                checks.forEach(sf -> sf.cancel(true));//TODO: hmm
         }
     }
 }
