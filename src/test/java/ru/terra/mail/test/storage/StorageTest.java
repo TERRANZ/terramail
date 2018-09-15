@@ -1,7 +1,5 @@
 package ru.terra.mail.test.storage;
 
-import javafx.collections.ObservableList;
-import javafx.collections.ObservableSet;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -10,19 +8,19 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+import ru.terra.mail.core.domain.MailFolder;
+import ru.terra.mail.core.domain.MailMessage;
+import ru.terra.mail.core.domain.MailMessageAttachment;
 import ru.terra.mail.storage.AbstractStorage;
 import ru.terra.mail.storage.db.entity.FolderEntity;
 import ru.terra.mail.storage.db.entity.MessageEntity;
 import ru.terra.mail.storage.db.repos.AttachmentsRepo;
 import ru.terra.mail.storage.db.repos.FoldersRepo;
 import ru.terra.mail.storage.db.repos.MessagesRepo;
-import ru.terra.mail.core.domain.MailFolder;
-import ru.terra.mail.core.domain.MailMessage;
-import ru.terra.mail.core.domain.MailMessageAttachment;
 
-import java.util.Collections;
-import java.util.Date;
-import java.util.UUID;
+import java.util.*;
+
+import static org.junit.Assert.assertEquals;
 
 @SpringBootTest
 @RunWith(SpringRunner.class)
@@ -116,10 +114,10 @@ public class StorageTest {
 
     @Test
     public void getAllFoldersTreeTest() throws Exception {
-        ObservableList<MailFolder> list = storage.getAllFoldersTree();
+        List<MailFolder> list = storage.getAllFoldersTree();
         Assert.assertNotNull(list);
-        Assert.assertTrue(list.size() == 1);
-        Assert.assertTrue(list.get(0).getChildFolders().size() == 2);
+        assertEquals(1, list.size());
+        assertEquals(2, list.get(0).getChildFolders().size());
     }
 
     @Test
@@ -133,25 +131,25 @@ public class StorageTest {
 
         storage.storeFolders(Collections.singletonList(mf1), rootFolder.getGuid());
 
-        ObservableList<MailFolder> list = storage.getAllFoldersTree();
-        Assert.assertEquals(3, list.get(0).getChildFolders().size());
+        List<MailFolder> list = storage.getAllFoldersTree();
+        assertEquals(3, list.get(0).getChildFolders().size());
     }
 
     @Test
     public void getFolderMessages() throws Exception {
-        ObservableSet<MailMessage> messages = storage.getFolderMessages(rootFolder.getGuid());
-        Assert.assertEquals(1, messages.size());
+        Set<MailMessage> messages = storage.getFolderMessages(rootFolder.getGuid());
+        assertEquals(1, messages.size());
         messages = storage.getFolderMessages(childFolder1.getGuid());
-        Assert.assertEquals(1, messages.size());
+        assertEquals(1, messages.size());
         messages = storage.getFolderMessages(childFolder2.getGuid());
-        Assert.assertEquals(1, messages.size());
+        assertEquals(1, messages.size());
     }
 
     @Test
     public void countMessages() throws Exception {
-        Assert.assertEquals(Integer.valueOf(1), storage.countMessagesInFolder(rootFolder.getGuid()));
-        Assert.assertEquals(Integer.valueOf(1), storage.countMessagesInFolder(childFolder1.getGuid()));
-        Assert.assertEquals(Integer.valueOf(1), storage.countMessagesInFolder(childFolder2.getGuid()));
+        assertEquals(Integer.valueOf(1), storage.countMessagesInFolder(rootFolder.getGuid()));
+        assertEquals(Integer.valueOf(1), storage.countMessagesInFolder(childFolder1.getGuid()));
+        assertEquals(Integer.valueOf(1), storage.countMessagesInFolder(childFolder2.getGuid()));
     }
 
     @Test
@@ -172,7 +170,7 @@ public class StorageTest {
         mm.setAttachments(Collections.singletonList(attachment));
 
         storage.storeFolderMessageInFolder(rootFolder.getGuid(), mm);
-        Assert.assertEquals(Integer.valueOf(2), storage.countMessagesInFolder(rootFolder.getGuid()));
+        assertEquals(Integer.valueOf(2), storage.countMessagesInFolder(rootFolder.getGuid()));
     }
 
     @Test

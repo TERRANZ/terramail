@@ -187,7 +187,7 @@ public class BasicStorageImpl implements AbstractStorage {
     }
 
     @Override
-    public ObservableList<MailFolder> merge(ObservableList<MailFolder> storedFolders, ObservableList<MailFolder> serverFolders) {
+    public List<MailFolder> merge(List<MailFolder> storedFolders, List<MailFolder> serverFolders) {
         if (storedFolders == null || storedFolders.size() == 0) {
             storedFolders = FXCollections.observableArrayList();
             storedFolders.addAll(serverFolders);

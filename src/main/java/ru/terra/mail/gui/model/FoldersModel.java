@@ -42,8 +42,8 @@ public class FoldersModel extends AbstractModel<MailFolder> {
         return treeRoot;
     }
 
-    public ObservableList<MailFolder> getFolders() {
-        ObservableList<MailFolder> storedFolders = null;
+    public List<MailFolder> getFolders() {
+        List<MailFolder> storedFolders = null;
         try {
             storedFolders = getStorage().getAllFoldersTree();
         } catch (Exception e) {

@@ -1,20 +1,19 @@
 package ru.terra.mail.storage;
 
-import javafx.collections.ObservableList;
-import javafx.collections.ObservableSet;
 import ru.terra.mail.core.domain.MailFolder;
 import ru.terra.mail.core.domain.MailFoldersTree;
 import ru.terra.mail.core.domain.MailMessage;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public interface AbstractStorage {
-    ObservableList<MailFolder> getAllFoldersTree() throws Exception;
+    List<MailFolder> getAllFoldersTree() throws Exception;
 
     void storeFolders(List<MailFolder> mailFolders, String parentId);
 
-    ObservableSet<MailMessage> getFolderMessages(String folderGuid);
+    Set<MailMessage> getFolderMessages(String folderGuid);
 
     void storeFolderMessageInFolder(String folderId, MailMessage m);
 
@@ -24,8 +23,8 @@ public interface AbstractStorage {
 
     MailFoldersTree processFolder(MailFoldersTree parent, MailFolder mailFolder);
 
-    ObservableList<MailFolder> merge(ObservableList<MailFolder> storedFolders,
-                                     ObservableList<MailFolder> serverFolders);
+    List<MailFolder> merge(List<MailFolder> storedFolders,
+                           List<MailFolder> serverFolders);
 
     void mergeFoldersTree(List<MailFolder> storedFolders, Map<String, MailFolder> serverFoldersMap);
 

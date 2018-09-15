@@ -2,6 +2,8 @@ package ru.terra.mail.gui.view.impl;
 
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -13,7 +15,6 @@ import ru.terra.mail.core.domain.MailMessage;
 import ru.terra.mail.gui.StageHelper;
 import ru.terra.mail.gui.controller.MainWindowController;
 import ru.terra.mail.gui.core.AbstractUIView;
-import ru.terra.mail.gui.core.NotificationManager;
 import ru.terra.mail.gui.view.MailSourceWindow;
 import ru.terra.mail.gui.view.MainWindowView;
 import ru.terra.mail.gui.view.beans.FoldersTreeItem;
@@ -22,6 +23,8 @@ import ru.terra.mail.gui.view.beans.MessagesTableItem;
 import java.net.URL;
 import java.util.Date;
 import java.util.ResourceBundle;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Created by terranz on 18.10.16.
@@ -43,18 +46,17 @@ public class MainWindowViewImpl extends AbstractUIView implements MainWindowView
     private TableColumn<MessagesTableItem, Date> colDate;
 
     private TreeItem<FoldersTreeItem> treeRoot;
-    //    private FullLoadService fullLoadService;
     private MainWindowController controller;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         controller = new MainWindowController(this);
-//        fullLoadService = new FullLoadService();
         setColums();
 
         controller.initialize();
 
         setFolderSelectionEvents();
+        setMessagesTableSelectionEvents();
     }
 
     private void setColums() {
@@ -104,7 +106,7 @@ public class MainWindowViewImpl extends AbstractUIView implements MainWindowView
         tvFolders.setOnMouseClicked(event -> {
             if (event.getClickCount() == 2) {
                 TreeItem<FoldersTreeItem> item = tvFolders.getSelectionModel().getSelectedItem();
-//                showMessages(item.getValue().getMailFolder());
+                controller.folderSelected(item.getValue().getMailFolder());
                 event.consume();
             }
         });
@@ -130,10 +132,7 @@ public class MainWindowViewImpl extends AbstractUIView implements MainWindowView
     }
 
     public void fullDownload(ActionEvent actionEvent) {
-//        if (fullLoadService != null && !fullLoadService.isRunning()) {
-//            fullLoadService.reset();
-//            fullLoadService.start();
-//        }
+        controller.fullDownload();
     }
 
     @Override
@@ -142,14 +141,32 @@ public class MainWindowViewImpl extends AbstractUIView implements MainWindowView
     }
 
     @Override
-    public void setFoldersTreeRoot(final MailFoldersTree treeRoot) {
-        final TreeItem<FoldersTreeItem> rootItem = new TreeItem<>(new FoldersTreeItem(treeRoot.getCurrentFolder()));
-        tvFolders.setRoot(rootItem);
+    public void setFoldersTreeRoot(final MailFoldersTree mailFoldersTree) {
+        treeRoot = new TreeItem<>(new FoldersTreeItem(mailFoldersTree.getCurrentFolder()));
+        mailFoldersTree.getChildrens().forEach(mft -> processFolders(treeRoot, mft));
+        tvFolders.setRoot(treeRoot);
+    }
+
+    private void processFolders(final TreeItem<FoldersTreeItem> rootItem, MailFoldersTree mailFoldersTree) {
+        rootItem.setExpanded(true);
+        final TreeItem<FoldersTreeItem> treeItem = new TreeItem<>(new FoldersTreeItem(mailFoldersTree.getCurrentFolder()));
+        mailFoldersTree.getChildrens().forEach(mft -> processFolders(treeItem, mft));
+        rootItem.getChildren().add(treeItem);
     }
 
     @Override
     public void runOnUIThread(final Runnable runnable) {
         Platform.runLater(runnable);
+    }
+
+    @Override
+    public void showMessagesList(final Set<MailMessage> storedMessages) {
+        tvMessages.getItems().clear();
+        ObservableList<MessagesTableItem> displayItems = FXCollections.observableArrayList();
+        if (storedMessages != null && storedMessages.size() > 0) {
+            displayItems.addAll(storedMessages.stream().map(MessagesTableItem::new).collect(Collectors.toList()));
+            tvMessages.setItems(displayItems);
+        }
     }
 
 //    private class LoadMessagesService extends Service<ObservableSet<MailMessage>> {

@@ -2,13 +2,17 @@ package ru.terra.mail.gui.controller;
 
 import javafx.application.Platform;
 import ru.terra.mail.Main;
+import ru.terra.mail.core.domain.MailFolder;
 import ru.terra.mail.core.domain.MailFoldersTree;
+import ru.terra.mail.core.domain.MailMessage;
 import ru.terra.mail.gui.core.NotificationListener;
 import ru.terra.mail.gui.core.NotificationManager;
 import ru.terra.mail.gui.model.FoldersModel;
 import ru.terra.mail.gui.model.MessagesModel;
 import ru.terra.mail.gui.view.MainWindowView;
 
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -19,6 +23,7 @@ public class MainWindowController implements NotificationListener {
     private final ExecutorService executorService = Executors.newFixedThreadPool(10);
 
     private final MainWindowView view;
+    private MailFolder prevSelectedMailFolder;
 
     public MainWindowController(final MainWindowView view) {
         this.view = view;
@@ -46,12 +51,28 @@ public class MainWindowController implements NotificationListener {
         executorService.submit(() -> {
             final MailFoldersTree result = foldersModel.getTreeRoot();
             view.runOnUIThread(() -> view.setFoldersTreeRoot(result));
+            updateStatus("Folders loaded");
         });
     }
 
     @Override
     public void notify(final String from, final String message) {
         updateStatus(from + " : " + message);
+    }
+
+    public void fullDownload() {
+    }
+
+    public void folderSelected(final MailFolder mailFolder) {
+        Optional.ofNullable(prevSelectedMailFolder).ifPresent(mf -> mf.getSubscribers().clear());
+        updateStatus("Messages loading for " + mailFolder.getFullName());
+        final Set<MailMessage> storedMessages = messagesModel.getStoredMessages(mailFolder.getGuid());
+        view.showMessagesList(storedMessages);
+        mailFolder.getSubscribers().add(mf -> view.showMessagesList(messagesModel.getStoredMessages(mailFolder.getGuid())));
+        prevSelectedMailFolder = mailFolder;
+        executorService.submit(() -> {
+            messagesModel.getFolderMessages(mailFolder, storedMessages);
+        });
     }
 //
 //    public void showMessages(MailFolder mailFolder) {
