@@ -2,10 +2,9 @@ package ru.terra.mail.storage;
 
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableSet;
-import javafx.scene.control.TreeItem;
-import ru.terra.mail.gui.controller.beans.FoldersTreeItem;
-import ru.terra.mail.storage.domain.MailFolder;
-import ru.terra.mail.storage.domain.MailMessage;
+import ru.terra.mail.core.domain.MailFolder;
+import ru.terra.mail.core.domain.MailFoldersTree;
+import ru.terra.mail.core.domain.MailMessage;
 
 import java.util.List;
 import java.util.Map;
@@ -23,7 +22,7 @@ public interface AbstractStorage {
 
     void loadFromFolder(MailFolder folder);
 
-    TreeItem<FoldersTreeItem> processFolder(TreeItem<FoldersTreeItem> parent, MailFolder mailFolder);
+    MailFoldersTree processFolder(MailFoldersTree parent, MailFolder mailFolder);
 
     ObservableList<MailFolder> merge(ObservableList<MailFolder> storedFolders,
                                      ObservableList<MailFolder> serverFolders);

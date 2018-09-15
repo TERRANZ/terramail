@@ -1,8 +1,8 @@
-package ru.terra.mail.gui.controller;
+package ru.terra.mail.gui.view;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.TextArea;
-import ru.terra.mail.gui.core.AbstractUIController;
+import ru.terra.mail.gui.core.AbstractUIView;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -10,7 +10,7 @@ import java.util.ResourceBundle;
 /**
  * Created by terranz on 21.10.16.
  */
-public class MailSourceWindow extends AbstractUIController {
+public class MailSourceWindow extends AbstractUIView {
     @FXML
     public TextArea taMailSource;
 

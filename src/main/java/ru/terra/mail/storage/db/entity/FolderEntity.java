@@ -1,11 +1,10 @@
 package ru.terra.mail.storage.db.entity;
 
 import org.hibernate.annotations.GenericGenerator;
-import ru.terra.mail.storage.domain.MailFolder;
+import ru.terra.mail.core.domain.MailFolder;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.UUID;
 
 /**
  * Created by Vadim_Korostelev on 1/24/2017.

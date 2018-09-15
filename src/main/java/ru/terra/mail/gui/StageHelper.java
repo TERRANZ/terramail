@@ -10,7 +10,7 @@ import javafx.stage.WindowEvent;
 import javafx.util.Pair;
 import org.springframework.stereotype.Component;
 import ru.terra.mail.gui.core.AbstractDialog;
-import ru.terra.mail.gui.core.AbstractUIController;
+import ru.terra.mail.gui.core.AbstractUIView;
 
 import java.io.IOException;
 import java.net.URL;
@@ -38,7 +38,7 @@ public class StageHelper {
         return new Pair<>(root, fxmlLoader.getController());
     }
 
-    public static <T extends AbstractUIController> Pair<Stage, T> openWindow(String fxmlFileName, String title, boolean closeCurr) {
+    public static <T extends AbstractUIView> Pair<Stage, T> openWindow(String fxmlFileName, String title, boolean closeCurr) {
         Pair<Parent, T> windowPair = loadRoot(fxmlFileName);
         Stage stage = new Stage();
         stage.setOnHidden(stageCloseEventHandler);

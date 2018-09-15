@@ -1,6 +1,6 @@
-package ru.terra.mail.gui.controller.beans;
+package ru.terra.mail.gui.view.beans;
 
-import ru.terra.mail.storage.domain.MailMessage;
+import ru.terra.mail.core.domain.MailMessage;
 
 import java.util.Date;
 

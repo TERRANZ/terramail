@@ -8,7 +8,7 @@ import java.text.SimpleDateFormat;
 /**
  * Created by terranz on 18.10.16.
  */
-public abstract class AbstractUIController implements Initializable {
+public abstract class AbstractUIView implements Initializable {
     protected SimpleDateFormat messageDateFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm");
     protected Stage currStage;
 

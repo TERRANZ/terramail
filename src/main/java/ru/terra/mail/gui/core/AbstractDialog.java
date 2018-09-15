@@ -5,7 +5,7 @@ import javafx.event.ActionEvent;
 /**
  * Created by terranz on 18.10.16.
  */
-public abstract class AbstractDialog<RetVal> extends AbstractUIController {
+public abstract class AbstractDialog<RetVal> extends AbstractUIView {
     protected DialogIsDoneListener<RetVal> dialogIsDoneListener;
     protected RetVal returnValue;
 

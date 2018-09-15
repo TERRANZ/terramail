@@ -1,6 +1,6 @@
-package ru.terra.mail.gui.controller.beans;
+package ru.terra.mail.gui.view.beans;
 
-import ru.terra.mail.storage.domain.MailFolder;
+import ru.terra.mail.core.domain.MailFolder;
 
 /**
  * Created by terranz on 19.10.16.

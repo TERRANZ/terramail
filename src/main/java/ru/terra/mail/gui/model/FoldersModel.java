@@ -1,10 +1,9 @@
 package ru.terra.mail.gui.model;
 
 import javafx.collections.ObservableList;
-import javafx.scene.control.TreeItem;
 import org.springframework.stereotype.Component;
-import ru.terra.mail.gui.controller.beans.FoldersTreeItem;
-import ru.terra.mail.storage.domain.MailFolder;
+import ru.terra.mail.core.domain.MailFolder;
+import ru.terra.mail.core.domain.MailFoldersTree;
 
 import javax.mail.MessagingException;
 import java.util.ArrayList;
@@ -16,9 +15,9 @@ import java.util.List;
 @Component
 public class FoldersModel extends AbstractModel<MailFolder> {
 
-    private TreeItem<FoldersTreeItem> treeRoot;
+    private MailFoldersTree treeRoot;
 
-    public TreeItem<FoldersTreeItem> getStoredFolders() {
+    public MailFoldersTree getStoredFolders() {
         List<MailFolder> folders = null;
         try {
             folders = getStorage().getAllFoldersTree();
@@ -26,19 +25,19 @@ public class FoldersModel extends AbstractModel<MailFolder> {
             logger.error("unable to get folders", e);
         }
         if (folders != null && folders.size() > 0) {
-            treeRoot = new TreeItem<>(new FoldersTreeItem(folders.get(0)));
+            treeRoot = new MailFoldersTree(folders.get(0));
             folders.get(0).getChildFolders().forEach(cf -> getStorage().processFolder(treeRoot, cf));
         } else {
             MailFolder mf = new MailFolder();
             mf.setName("Loading...");
-            treeRoot = new TreeItem<>(new FoldersTreeItem(mf));
+            treeRoot = new MailFoldersTree(mf);
         }
         return treeRoot;
     }
 
-    public TreeItem<FoldersTreeItem> getTreeRoot() {
+    public MailFoldersTree getTreeRoot() {
         List<MailFolder> folders = getFolders();
-        treeRoot = new TreeItem<>(new FoldersTreeItem(folders.get(0)));
+        treeRoot = new MailFoldersTree(folders.get(0));
         folders.get(0).getChildFolders().forEach(cf -> getStorage().processFolder(treeRoot, cf));
         return treeRoot;
     }
@@ -71,14 +70,13 @@ public class FoldersModel extends AbstractModel<MailFolder> {
 
     public List<MailFolder> getAllFolders() {
         List<MailFolder> folders = new ArrayList<>();
-        folders.add(getTreeRoot().getValue().getMailFolder());
+        folders.add(getTreeRoot().getCurrentFolder());
         folders.addAll(listFolders(folders.get(0)));
         return folders;
     }
 
     private List<MailFolder> listFolders(MailFolder mailFolder) {
-        List<MailFolder> ret = new ArrayList<>();
-        ret.addAll(mailFolder.getChildFolders());
+        List<MailFolder> ret = new ArrayList<>(mailFolder.getChildFolders());
         mailFolder.getChildFolders().forEach(mf -> ret.addAll(listFolders(mf)));
         return ret;
     }

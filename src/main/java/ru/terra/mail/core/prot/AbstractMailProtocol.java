@@ -1,10 +1,10 @@
-package ru.terra.mail.core;
+package ru.terra.mail.core.prot;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.terra.mail.storage.domain.MailFolder;
+import ru.terra.mail.core.domain.MailFolder;
 
 import javax.mail.Folder;
 import javax.mail.MessagingException;
@@ -31,7 +31,7 @@ public abstract class AbstractMailProtocol {
                 logger.error("Unable to list folders", e);
             }
             return null;
-        }).forEach(e -> ret.add(e));
+        }).forEach(ret::add);
         return ret;
     }
 

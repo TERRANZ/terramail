@@ -16,9 +16,9 @@ import ru.terra.mail.storage.db.entity.MessageEntity;
 import ru.terra.mail.storage.db.repos.AttachmentsRepo;
 import ru.terra.mail.storage.db.repos.FoldersRepo;
 import ru.terra.mail.storage.db.repos.MessagesRepo;
-import ru.terra.mail.storage.domain.MailFolder;
-import ru.terra.mail.storage.domain.MailMessage;
-import ru.terra.mail.storage.domain.MailMessageAttachment;
+import ru.terra.mail.core.domain.MailFolder;
+import ru.terra.mail.core.domain.MailMessage;
+import ru.terra.mail.core.domain.MailMessageAttachment;
 
 import java.util.Collections;
 import java.util.Date;

@@ -1,13 +1,13 @@
-package ru.terra.mail.storage.domain;
+package ru.terra.mail.core.domain;
 
-import org.codehaus.jackson.annotate.JsonIgnore;
+import com.beust.jcommander.internal.Lists;
+import ru.terra.mail.storage.ModificationNotify;
 import ru.terra.mail.storage.db.entity.FolderEntity;
 
 import javax.mail.Folder;
 import javax.mail.MessagingException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * Created by terranz on 18.10.16.
@@ -18,9 +18,9 @@ public class MailFolder {
     private String name;
     private String fullName;
     private Integer unreadMessages = 0;
-    @JsonIgnore
     private Folder folder;
     private Boolean deleted;
+    private List<ModificationNotify> subscribers = Lists.newArrayList();
 
     public MailFolder() {
         this.childFolders = new ArrayList<>();
@@ -101,6 +101,18 @@ public class MailFolder {
 
     public void setDeleted(Boolean deleted) {
         this.deleted = deleted;
+    }
+
+    public List<ModificationNotify> getSubscribers() {
+        return subscribers;
+    }
+
+    public void setSubscribers(final List<ModificationNotify> subscribers) {
+        this.subscribers = subscribers;
+    }
+
+    public void notifyModified() {
+        subscribers.forEach(m -> m.onModified(this));
     }
 
     @Override

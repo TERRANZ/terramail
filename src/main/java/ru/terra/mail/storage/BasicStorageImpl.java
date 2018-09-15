@@ -11,7 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import ru.terra.mail.config.StartUpParameters;
-import ru.terra.mail.gui.controller.beans.FoldersTreeItem;
+import ru.terra.mail.core.domain.MailFoldersTree;
+import ru.terra.mail.gui.view.beans.FoldersTreeItem;
 import ru.terra.mail.gui.core.NotificationManager;
 import ru.terra.mail.storage.db.entity.AttachmentEntity;
 import ru.terra.mail.storage.db.entity.FolderEntity;
@@ -19,9 +20,9 @@ import ru.terra.mail.storage.db.entity.MessageEntity;
 import ru.terra.mail.storage.db.repos.AttachmentsRepo;
 import ru.terra.mail.storage.db.repos.FoldersRepo;
 import ru.terra.mail.storage.db.repos.MessagesRepo;
-import ru.terra.mail.storage.domain.MailFolder;
-import ru.terra.mail.storage.domain.MailMessage;
-import ru.terra.mail.storage.domain.MailMessageAttachment;
+import ru.terra.mail.core.domain.MailFolder;
+import ru.terra.mail.core.domain.MailMessage;
+import ru.terra.mail.core.domain.MailMessageAttachment;
 
 import javax.activation.DataHandler;
 import javax.mail.BodyPart;
@@ -178,9 +179,9 @@ public class BasicStorageImpl implements AbstractStorage {
     }
 
     @Override
-    public TreeItem<FoldersTreeItem> processFolder(TreeItem<FoldersTreeItem> parent, MailFolder mailFolder) {
-        TreeItem<FoldersTreeItem> ret = new TreeItem<>(new FoldersTreeItem(mailFolder));
-        parent.getChildren().add(ret);
+    public MailFoldersTree processFolder(MailFoldersTree parent, MailFolder mailFolder) {
+        MailFoldersTree ret = new MailFoldersTree(mailFolder);
+        parent.getChildrens().add(ret);
         mailFolder.getChildFolders().forEach(cf -> processFolder(ret, cf));
         return ret;
     }

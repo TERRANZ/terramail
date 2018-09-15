@@ -7,7 +7,7 @@
 <AnchorPane xmlns:fx="http://javafx.com/fxml/1" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
             minWidth="-Infinity"
             prefHeight="547.0" prefWidth="742.0" xmlns="http://javafx.com/javafx/8"
-            fx:controller="ru.terra.mail.gui.controller.MailSourceWindow">
+            fx:controller="ru.terra.mail.gui.view.MailSourceWindow">
     <children>
         <TextArea fx:id="taMailSource" layoutX="90.0" layoutY="36.0" AnchorPane.bottomAnchor="0.0"
                   AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">

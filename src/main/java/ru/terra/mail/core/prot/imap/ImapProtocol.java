@@ -1,7 +1,7 @@
 package ru.terra.mail.core.prot.imap;
 
 import com.sun.mail.util.MailSSLSocketFactory;
-import ru.terra.mail.core.AbstractMailProtocol;
+import ru.terra.mail.core.prot.AbstractMailProtocol;
 
 import javax.mail.MessagingException;
 import javax.mail.Session;

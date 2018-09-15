@@ -1,6 +1,6 @@
 package ru.terra.mail.config;
 
-import ru.terra.mail.core.AbstractMailProtocol;
+import ru.terra.mail.core.prot.AbstractMailProtocol;
 import ru.terra.mail.core.prot.imap.ImapProtocol;
 import ru.terra.mail.core.prot.pop.PopProtocol;
 

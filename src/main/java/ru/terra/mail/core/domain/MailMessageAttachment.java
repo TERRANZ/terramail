@@ -1,4 +1,4 @@
-package ru.terra.mail.storage.domain;
+package ru.terra.mail.core.domain;
 
 import ru.terra.mail.storage.db.entity.AttachmentEntity;
 

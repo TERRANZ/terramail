@@ -1,7 +1,7 @@
 package ru.terra.mail.storage.db.entity;
 
 import org.hibernate.annotations.GenericGenerator;
-import ru.terra.mail.storage.domain.MailMessage;
+import ru.terra.mail.core.domain.MailMessage;
 
 import javax.persistence.*;
 import java.io.Serializable;

@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import ru.terra.mail.config.MailConfiguration;
 import ru.terra.mail.config.StartUpParameters;
-import ru.terra.mail.core.AbstractMailProtocol;
+import ru.terra.mail.core.prot.AbstractMailProtocol;
 import ru.terra.mail.storage.AbstractStorage;
 
 import javax.mail.MessagingException;

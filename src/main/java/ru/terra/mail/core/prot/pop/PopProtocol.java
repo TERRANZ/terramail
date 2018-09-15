@@ -1,6 +1,6 @@
 package ru.terra.mail.core.prot.pop;
 
-import ru.terra.mail.core.AbstractMailProtocol;
+import ru.terra.mail.core.prot.AbstractMailProtocol;
 
 import javax.mail.MessagingException;
 import javax.mail.Session;
