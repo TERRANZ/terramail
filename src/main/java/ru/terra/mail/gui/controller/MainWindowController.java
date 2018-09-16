@@ -61,6 +61,7 @@ public class MainWindowController implements NotificationListener {
     }
 
     public void fullDownload() {
+        foldersModel.getAllFolders().forEach(f -> executorService.submit(() -> messagesModel.loadFromFolder(f)));
     }
 
     public void folderSelected(final MailFolder mailFolder) {
@@ -73,6 +74,10 @@ public class MainWindowController implements NotificationListener {
         executorService.submit(() -> {
             messagesModel.getFolderMessages(mailFolder, storedMessages);
         });
+    }
+
+    public void showMessage(final MailMessage message) {
+        view.showMailMesage(message);
     }
 //
 //    public void showMessages(MailFolder mailFolder) {

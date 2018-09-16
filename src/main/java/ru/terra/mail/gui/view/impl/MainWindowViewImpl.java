@@ -82,21 +82,9 @@ public class MainWindowViewImpl extends AbstractUIView implements MainWindowView
     private void setMessagesTableSelectionEvents() {
         tvMessages.setOnMouseClicked(event -> {
             if (event.getClickCount() == 2) {
-                wvMailViewer.getEngine().loadContent("");
                 MessagesTableItem item = tvMessages.getSelectionModel().getSelectedItem();
                 if (item != null) {
-                    MailMessage msg = item.getMessage();
-                    wvMailViewer.setUserData(msg);
-                    if (msg.getMessageBody() != null)
-                        wvMailViewer.getEngine().loadContent(msg.getMessageBody());
-                    else {
-                        if (msg.getAttachments() != null && msg.getAttachments().size() > 0) {
-                            msg.getAttachments().stream()
-                                    .filter(attachment -> attachment.getType().contains("text/html"))
-                                    .forEach(attachment -> wvMailViewer.getEngine()
-                                            .loadContent(msg.getMessageBody()));
-                        }
-                    }
+                    controller.showMessage(item.getMessage());
                 }
             }
         });
@@ -166,6 +154,25 @@ public class MainWindowViewImpl extends AbstractUIView implements MainWindowView
         if (storedMessages != null && storedMessages.size() > 0) {
             displayItems.addAll(storedMessages.stream().map(MessagesTableItem::new).collect(Collectors.toList()));
             tvMessages.setItems(displayItems);
+        }
+    }
+
+    @Override
+    public void showMailMesage(final MailMessage msg) {
+        wvMailViewer.getEngine().loadContent("");
+
+        if (msg != null) {
+            wvMailViewer.setUserData(msg);
+            if (msg.getMessageBody() != null)
+                wvMailViewer.getEngine().loadContent(msg.getMessageBody());
+            else {
+                if (msg.getAttachments() != null && msg.getAttachments().size() > 0) {
+                    msg.getAttachments().stream()
+                            .filter(attachment -> attachment.getType().contains("text"))
+                            .forEach(attachment -> wvMailViewer.getEngine()
+                                    .loadContent(msg.getMessageBody()));
+                }
+            }
         }
     }
 

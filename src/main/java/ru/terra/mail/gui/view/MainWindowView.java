@@ -14,4 +14,6 @@ public interface MainWindowView {
     void runOnUIThread(Runnable runnable);
 
     void showMessagesList(Set<MailMessage> storedMessages);
+
+    void showMailMesage(MailMessage message);
 }
