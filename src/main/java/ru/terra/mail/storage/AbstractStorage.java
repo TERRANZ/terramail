@@ -9,24 +9,24 @@ import java.util.Map;
 import java.util.Set;
 
 public interface AbstractStorage {
-    List<MailFolder> getAllFoldersTree() throws Exception;
+    List<MailFolder> getAllFoldersTree();
 
     void storeFolders(List<MailFolder> mailFolders, String parentId);
 
-    Set<MailMessage> getFolderMessages(String folderGuid);
+    Set<MailMessage> getFolderMessages(final String folderGuid);
 
-    void storeFolderMessageInFolder(String folderId, MailMessage m);
+    void storeFolderMessageInFolder(final String folderId, final MailMessage m);
 
-    Integer countMessagesInFolder(String folderId);
+    Integer countMessagesInFolder(final String folderId);
 
-    void loadFromFolder(MailFolder folder);
+    void loadFromFolder(final MailFolder folder);
 
-    MailFoldersTree processFolder(MailFoldersTree parent, MailFolder mailFolder);
+    MailFoldersTree processFolder(final MailFoldersTree parent, final MailFolder mailFolder);
 
     List<MailFolder> merge(List<MailFolder> storedFolders,
                            List<MailFolder> serverFolders);
 
-    void mergeFoldersTree(List<MailFolder> storedFolders, Map<String, MailFolder> serverFoldersMap);
+    void mergeFoldersTree(final List<MailFolder> storedFolders, final Map<String, MailFolder> serverFoldersMap);
 
-    List<MailFolder> expandFoldersTree(MailFolder mailFolder);
+    List<MailFolder> expandFoldersTree(final MailFolder mailFolder);
 }

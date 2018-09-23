@@ -28,7 +28,7 @@ public class FoldersModel extends AbstractModel<MailFolder> {
             treeRoot = new MailFoldersTree(folders.get(0));
             folders.get(0).getChildFolders().forEach(cf -> getStorage().processFolder(treeRoot, cf));
         } else {
-            MailFolder mf = new MailFolder();
+            final MailFolder mf = new MailFolder();
             mf.setName("Loading...");
             treeRoot = new MailFoldersTree(mf);
         }
@@ -36,19 +36,14 @@ public class FoldersModel extends AbstractModel<MailFolder> {
     }
 
     public MailFoldersTree getTreeRoot() {
-        List<MailFolder> folders = getFolders();
+        final List<MailFolder> folders = getFolders();
         treeRoot = new MailFoldersTree(folders.get(0));
         folders.get(0).getChildFolders().forEach(cf -> getStorage().processFolder(treeRoot, cf));
         return treeRoot;
     }
 
-    public List<MailFolder> getFolders() {
-        List<MailFolder> storedFolders = null;
-        try {
-            storedFolders = getStorage().getAllFoldersTree();
-        } catch (Exception e) {
-            logger.error("unable to get folders", e);
-        }
+    private List<MailFolder> getFolders() {
+        List<MailFolder> storedFolders = getStorage().getAllFoldersTree();
         ObservableList<MailFolder> serverFolders = null;
         boolean loggedIn = false;
         try {
@@ -75,8 +70,8 @@ public class FoldersModel extends AbstractModel<MailFolder> {
         return folders;
     }
 
-    private List<MailFolder> listFolders(MailFolder mailFolder) {
-        List<MailFolder> ret = new ArrayList<>(mailFolder.getChildFolders());
+    private List<MailFolder> listFolders(final MailFolder mailFolder) {
+        final List<MailFolder> ret = new ArrayList<>(mailFolder.getChildFolders());
         mailFolder.getChildFolders().forEach(mf -> ret.addAll(listFolders(mf)));
         return ret;
     }

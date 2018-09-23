@@ -1,9 +1,9 @@
 package ru.terra.mail.storage;
 
+import com.beust.jcommander.internal.Lists;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableSet;
-import javafx.scene.control.TreeItem;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,8 +11,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import ru.terra.mail.config.StartUpParameters;
+import ru.terra.mail.core.domain.MailFolder;
 import ru.terra.mail.core.domain.MailFoldersTree;
-import ru.terra.mail.gui.view.beans.FoldersTreeItem;
+import ru.terra.mail.core.domain.MailMessage;
+import ru.terra.mail.core.domain.MailMessageAttachment;
 import ru.terra.mail.gui.core.NotificationManager;
 import ru.terra.mail.storage.db.entity.AttachmentEntity;
 import ru.terra.mail.storage.db.entity.FolderEntity;
@@ -20,9 +22,6 @@ import ru.terra.mail.storage.db.entity.MessageEntity;
 import ru.terra.mail.storage.db.repos.AttachmentsRepo;
 import ru.terra.mail.storage.db.repos.FoldersRepo;
 import ru.terra.mail.storage.db.repos.MessagesRepo;
-import ru.terra.mail.core.domain.MailFolder;
-import ru.terra.mail.core.domain.MailMessage;
-import ru.terra.mail.core.domain.MailMessageAttachment;
 
 import javax.activation.DataHandler;
 import javax.mail.BodyPart;
@@ -50,26 +49,26 @@ public class BasicStorageImpl implements AbstractStorage {
     @Autowired
     private AttachmentsRepo attachmentsRepo;
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Override
-    public ObservableList<MailFolder> getAllFoldersTree() throws Exception {
-        Map<String, MailFolder> foldersMap = new HashMap<>();
+    public ObservableList<MailFolder> getAllFoldersTree() {
+        final Map<String, MailFolder> foldersMap = new HashMap<>();
         MailFolder inbox = null;
-        Map<String, FolderEntity> storedFoldersMap = new HashMap<>();
+        final Map<String, FolderEntity> storedFoldersMap = new HashMap<>();
         try {
             foldersRepo.findAll().forEach(f -> {
                 storedFoldersMap.put(f.getGuid(), f);
                 foldersMap.put(f.getFullName(), new MailFolder(f));
             });
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Unable to save folder", e);
         }
-        for (FolderEntity fe : storedFoldersMap.values()) {
+        for (final FolderEntity fe : storedFoldersMap.values()) {
             if (!Objects.equals(fe.getParentFolderId(), "-1")) {
-                FolderEntity parentEntity = storedFoldersMap.get(fe.getParentFolderId());
-                MailFolder parentFolder = foldersMap.get(parentEntity.getFullName());
-                MailFolder childFolder = foldersMap.get(fe.getFullName());
+                final FolderEntity parentEntity = storedFoldersMap.get(fe.getParentFolderId());
+                final MailFolder parentFolder = foldersMap.get(parentEntity.getFullName());
+                final MailFolder childFolder = foldersMap.get(fe.getFullName());
                 parentFolder.getChildFolders().add(childFolder);
             } else
                 inbox = foldersMap.get(fe.getFullName());
@@ -80,32 +79,31 @@ public class BasicStorageImpl implements AbstractStorage {
     }
 
     @Override
-    public void storeFolders(List<MailFolder> mailFolders, String parentId) {
+    public void storeFolders(final List<MailFolder> mailFolders, final String parentId) {
         if (mailFolders != null) {
-            mailFolders.forEach(f -> {
+            mailFolders.forEach(folder -> {
                 try {
-                    FolderEntity folderEntity = foldersRepo.findByFullName(f.getFullName());
-                    if (folderEntity == null) {
-                        folderEntity = new FolderEntity(f, parentId);
-                    } else {
-                        folderEntity.setUnreadMessages(f.getUnreadMessages());
-                    }
+                    final FolderEntity folderEntity =
+                            Optional
+                                    .ofNullable(foldersRepo.findByFullName(folder.getFullName()))
+                                    .orElse(new FolderEntity(folder, parentId));
+                    folderEntity.setUnreadMessages(folder.getUnreadMessages());
                     foldersRepo.save(folderEntity);
-                    f.setGuid(folderEntity.getGuid());
-                    storeFolders(f.getChildFolders(), folderEntity.getGuid());
+                    folder.setGuid(folderEntity.getGuid());
+                    storeFolders(folder.getChildFolders(), folderEntity.getGuid());
                 } catch (Exception e) {
-                    logger.error("Unable to load folder: " + f, e);
+                    logger.error("Unable to load folder: " + folder, e);
                 }
             });
         }
     }
 
     @Override
-    public ObservableSet<MailMessage> getFolderMessages(String folderGuid) {
+    public ObservableSet<MailMessage> getFolderMessages(final String folderGuid) {
         return FXCollections.observableSet(messagesRepo
                 .findByFolderId(folderGuid).stream().map(m -> {
-                    MailMessage ret = new MailMessage(m, folderGuid);
-                    List<AttachmentEntity> attachments = attachmentsRepo.findByMessageId(m.getGuid());
+                    final MailMessage ret = new MailMessage(m, folderGuid);
+                    final List<AttachmentEntity> attachments = attachmentsRepo.findByMessageId(m.getGuid());
                     if (attachments != null && attachments.size() > 0) {
                         attachments.forEach(a -> ret.getAttachments().add(new MailMessageAttachment(a)));
                     }
@@ -114,15 +112,12 @@ public class BasicStorageImpl implements AbstractStorage {
     }
 
     @Override
-    public void storeFolderMessageInFolder(String folderId, MailMessage m) {
+    public void storeFolderMessageInFolder(final String folderId, final MailMessage m) {
         MessageEntity me = new MessageEntity(m, folderId);
         if (messagesRepo.findByCreateDate(me.getCreateDate()) == null) {
             try {
                 messagesRepo.save(me);
-//                logger.info("Created " + me.toString());
-                for (MailMessageAttachment mma : m.getAttachments()) {
-                    attachmentsRepo.save(new AttachmentEntity(mma, me.getGuid()));
-                }
+                m.getAttachments().parallelStream().map(mma -> new AttachmentEntity(mma, me.getGuid())).forEach(attachmentsRepo::save);
             } catch (Exception e) {
                 logger.error("Unable to create new message entity", e);
             }
@@ -130,23 +125,23 @@ public class BasicStorageImpl implements AbstractStorage {
     }
 
     @Override
-    public Integer countMessagesInFolder(String folderId) {
+    public Integer countMessagesInFolder(final String folderId) {
         return messagesRepo.countByFolderId(folderId);
     }
 
     @Override
-    public void loadFromFolder(MailFolder folder) {
+    public void loadFromFolder(final MailFolder folder) {
         if (folder.getFolder() == null)
             return;
         try {
             if (!folder.getFolder().isOpen())
                 folder.getFolder().open(Folder.READ_ONLY);
             int start = 1;
-            int count = folder.getFolder().getMessageCount();
+            final int count = folder.getFolder().getMessageCount();
             logger.info("Count: " + count + " in folder " + folder.getFullName());
             while (start < count) {
-                int end = count - start < PAGE_SIZE ? count - start : PAGE_SIZE;
-                Map<Long, Message> messages = new HashMap<>();
+                final int end = count - start < PAGE_SIZE ? count - start : PAGE_SIZE;
+                final Map<Long, Message> messages = new HashMap<>();
                 Arrays.stream(folder.getFolder().getMessages(start, end + start)).forEach(m -> {
                     try {
                         messages.put(m.getReceivedDate().getTime(), m);
@@ -158,13 +153,16 @@ public class BasicStorageImpl implements AbstractStorage {
                 messagesRepo.findByDatesInList(messages.keySet()).forEach(m -> messages.remove(m.getCreateDate()));
                 NotificationManager.getInstance().notify("Storage", "Loading messages folder: " + folder.getFullName() + " loaded " + (end + start) + " of " + count);
                 messages.values().parallelStream().forEach(m -> {
-                    MailMessage msg = new MailMessage(m, folder.getGuid());
+                    final MailMessage msg = new MailMessage(m, folder.getGuid());
                     processMailMessageAttachments(msg);
                     storeFolderMessageInFolder(msg.getFolderGuid(), msg);
                     ArchiveWorker.getInstance().close();
                 });
 
                 start += end;
+                if (messages.size() > 0) {
+                    folder.notifyModified();
+                }
             }
             logger.info("Messages in folder " + folder.getFullName() + " : " + messagesRepo.countByFolderId(folder.getGuid()));
         } catch (Exception e) {
@@ -179,27 +177,27 @@ public class BasicStorageImpl implements AbstractStorage {
     }
 
     @Override
-    public MailFoldersTree processFolder(MailFoldersTree parent, MailFolder mailFolder) {
-        MailFoldersTree ret = new MailFoldersTree(mailFolder);
+    public MailFoldersTree processFolder(final MailFoldersTree parent, final MailFolder mailFolder) {
+        final MailFoldersTree ret = new MailFoldersTree(mailFolder);
         parent.getChildrens().add(ret);
         mailFolder.getChildFolders().forEach(cf -> processFolder(ret, cf));
         return ret;
     }
 
     @Override
-    public List<MailFolder> merge(List<MailFolder> storedFolders, List<MailFolder> serverFolders) {
+    public List<MailFolder> merge(List<MailFolder> storedFolders, final List<MailFolder> serverFolders) {
         if (storedFolders == null || storedFolders.size() == 0) {
             storedFolders = FXCollections.observableArrayList();
             storedFolders.addAll(serverFolders);
         } else {
-            Map<String, MailFolder> serverFoldersMap = new HashMap<>();
-            List<MailFolder> expandedServerfolders = new ArrayList<>();
-            List<MailFolder> expandedStoredfolders = new ArrayList<>();
+            final Map<String, MailFolder> serverFoldersMap = new HashMap<>();
+            final List<MailFolder> expandedServerfolders = new ArrayList<>();
+            final List<MailFolder> expandedStoredfolders = new ArrayList<>();
             serverFolders.forEach(sf -> expandedServerfolders.addAll(expandFoldersTree(sf)));
             storedFolders.forEach(sf -> expandedStoredfolders.addAll(expandFoldersTree(sf)));
             expandedServerfolders.forEach(f -> serverFoldersMap.put(f.getFullName(), f));
-            for (MailFolder storedFolder : expandedStoredfolders) {
-                MailFolder serverFolder = serverFoldersMap.get(storedFolder.getFullName());
+            for (final MailFolder storedFolder : expandedStoredfolders) {
+                final MailFolder serverFolder = serverFoldersMap.get(storedFolder.getFullName());
                 if (serverFolder != null) {
                     storedFolder.setFolder(serverFolder.getFolder());
                     storedFolder.setUnreadMessages(serverFolder.getUnreadMessages());
@@ -214,9 +212,9 @@ public class BasicStorageImpl implements AbstractStorage {
     }
 
     @Override
-    public void mergeFoldersTree(List<MailFolder> storedFolders, Map<String, MailFolder> serverFoldersMap) {
-        List<MailFolder> foldersToAdd = new ArrayList<>();
-        for (MailFolder storedFolder : storedFolders)
+    public void mergeFoldersTree(final List<MailFolder> storedFolders, final Map<String, MailFolder> serverFoldersMap) {
+        final List<MailFolder> foldersToAdd = new ArrayList<>();
+        for (final MailFolder storedFolder : storedFolders)
             if (!serverFoldersMap.containsKey(storedFolder.getFullName()))
                 foldersToAdd.add(serverFoldersMap.get(storedFolder.getFullName()));
             else
@@ -226,23 +224,21 @@ public class BasicStorageImpl implements AbstractStorage {
     }
 
     @Override
-    public List<MailFolder> expandFoldersTree(MailFolder mailFolder) {
-        List<MailFolder> folders = new ArrayList<>();
-        folders.add(mailFolder);
-        if (mailFolder.getChildFolders().size() > 0)
-            mailFolder.getChildFolders().forEach(mf -> folders.addAll(expandFoldersTree(mf)));
+    public List<MailFolder> expandFoldersTree(final MailFolder mailFolder) {
+        List<MailFolder> folders = Lists.newArrayList(mailFolder);
+        mailFolder.getChildFolders().forEach(mf -> folders.addAll(expandFoldersTree(mf)));
         return folders;
     }
 
-    private void processMailMessageAttachments(MailMessage mm) {
-        Message msg = mm.getMessage();
+    private void processMailMessageAttachments(final MailMessage mm) {
+        final Message msg = mm.getMessage();
         try {
             if (msg.getContent() instanceof MimeMultipart) {
-                MimeMultipart multipart = (MimeMultipart) msg.getContent();
+                final MimeMultipart multipart = (MimeMultipart) msg.getContent();
                 for (int j = 0; j < multipart.getCount(); j++) {
-                    BodyPart bodyPart = multipart.getBodyPart(j);
-                    DataHandler handler = bodyPart.getDataHandler();
-                    String targetFileName = StartUpParameters.getInstance().getAttachments() + File.separator + mm.getFolderGuid() + File.separator + mm.getGuid();
+                    final BodyPart bodyPart = multipart.getBodyPart(j);
+                    final DataHandler handler = bodyPart.getDataHandler();
+                    final String targetFileName = StartUpParameters.getInstance().getAttachments() + File.separator + mm.getFolderGuid() + File.separator + mm.getGuid();
                     mm.getAttachments().add(new MailMessageAttachment(
                             handler.getContentType(),
                             handler.getName(),
