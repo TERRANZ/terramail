@@ -17,9 +17,7 @@ import ru.terra.mail.gui.StageHelper;
  * Created by terranz on 18.10.16.
  */
 @SpringBootApplication
-@EnableAutoConfiguration
 @Component
-@ComponentScan
 @EnableJpaRepositories(basePackages = "ru.terra.mail")
 public class Main extends Application {
     public static ConfigurableApplicationContext context;
