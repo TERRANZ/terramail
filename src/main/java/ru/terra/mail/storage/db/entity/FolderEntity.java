@@ -1,7 +1,6 @@
 package ru.terra.mail.storage.db.entity;
 
 import jakarta.persistence.*;
-import org.hibernate.annotations.GenericGenerator;
 import ru.terra.mail.core.domain.MailFolder;
 
 import java.io.Serializable;
@@ -16,12 +15,14 @@ public class FolderEntity implements Serializable {
     @Basic(optional = false)
     @Column(name = "id", nullable = false)
     @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name = "system-uuid", strategy = "org.hibernate.id.UUIDGenerator")
     private String guid;
+    @Lob
     private String name;
+    @Lob
     private String fullName;
     private Integer unreadMessages = 0;
     private Boolean deleted;
+    @Lob
     private String parentFolderId;
 
     public FolderEntity() {

@@ -1,7 +1,6 @@
 package ru.terra.mail.storage.db.entity;
 
 import jakarta.persistence.*;
-import org.hibernate.annotations.GenericGenerator;
 import ru.terra.mail.core.domain.MailMessageAttachment;
 
 import java.io.Serializable;
@@ -16,11 +15,14 @@ public class AttachmentEntity implements Serializable {
     @Basic(optional = false)
     @Column(name = "id", nullable = false)
     @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name = "system-uuid", strategy = "org.hibernate.id.UUIDGenerator")
     private String guid;
+    @Lob
     private String type;
+    @Lob
     private String fileName;
+    @Lob
     private String messageId;
+    @Lob
     private String localFileName;
 
     public AttachmentEntity() {
