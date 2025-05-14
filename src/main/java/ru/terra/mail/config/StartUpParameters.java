@@ -1,11 +1,15 @@
 package ru.terra.mail.config;
 
 import com.beust.jcommander.Parameter;
+import lombok.Data;
+import lombok.Getter;
 
 /**
  * Created by terranz on 19.10.16.
  */
+@Data
 public class StartUpParameters {
+    @Getter
     private static StartUpParameters instance = new StartUpParameters();
     @Parameter(names = {"-u", "--user"}, description = "Mail user")
     private String user = "test";
@@ -19,49 +23,5 @@ public class StartUpParameters {
     private String protocol = "imap";
 
     private StartUpParameters() {
-    }
-
-    public static StartUpParameters getInstance() {
-        return instance;
-    }
-
-    public String getUser() {
-        return user;
-    }
-
-    public void setUser(String user) {
-        this.user = user;
-    }
-
-    public String getPass() {
-        return pass;
-    }
-
-    public void setPass(String pass) {
-        this.pass = pass;
-    }
-
-    public String getServ() {
-        return serv;
-    }
-
-    public void setServ(String serv) {
-        this.serv = serv;
-    }
-
-    public String getAttachments() {
-        return attachments;
-    }
-
-    public void setAttachments(String attachments) {
-        this.attachments = attachments;
-    }
-
-    public String getProtocol() {
-        return protocol;
-    }
-
-    public void setProtocol(String protocol) {
-        this.protocol = protocol;
     }
 }

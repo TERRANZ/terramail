@@ -41,24 +41,24 @@ public class StorageTest {
     @Before
     public void setUp() {
         rootFolder = new FolderEntity();
-        rootFolder.setGuid(UUID.randomUUID().toString());
+        rootFolder.setGuid(UUID.randomUUID());
         rootFolder.setFullName("INBOX.ROOT");
         rootFolder.setName("ROOT");
         rootFolder.setUnreadMessages(0);
-        rootFolder.setParentFolderId("-1");
+        rootFolder.setParentFolderId(UUID.randomUUID());
 
         childFolder1 = new FolderEntity();
-        childFolder1.setGuid(UUID.randomUUID().toString());
+        childFolder1.setGuid(UUID.randomUUID());
         childFolder1.setName("child1");
         childFolder1.setFullName("INBOX.ROOT.child1");
 
         childFolder2 = new FolderEntity();
-        childFolder2.setGuid(UUID.randomUUID().toString());
+        childFolder2.setGuid(UUID.randomUUID());
         childFolder2.setName("child2");
         childFolder2.setFullName("INBOX.ROOT.child2");
 
         childFolder3 = new FolderEntity();
-        childFolder3.setGuid(UUID.randomUUID().toString());
+        childFolder3.setGuid(UUID.randomUUID());
         childFolder3.setName("child3");
         childFolder3.setFullName("INBOX.ROOT.child3");
 
@@ -126,7 +126,7 @@ public class StorageTest {
         mf1.setName("folder1");
         mf1.setFullName("FOLDER1");
         mf1.setDeleted(false);
-        mf1.setGuid(UUID.randomUUID().toString());
+        mf1.setGuid(UUID.randomUUID());
         mf1.setUnreadMessages(1);
 
         storage.storeFolders(Collections.singletonList(mf1), rootFolder.getGuid());

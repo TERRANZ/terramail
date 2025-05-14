@@ -21,12 +21,13 @@ import java.util.UUID;
 public class AttachmentsRepoTest {
     @Autowired
     public AttachmentsRepo repo;
+    private UUID msgId = UUID.randomUUID();
 
     @Before
     public void setUp() {
         AttachmentEntity ae = new AttachmentEntity();
-        ae.setGuid(UUID.randomUUID().toString());
-        ae.setMessageId("msgid");
+        ae.setGuid(UUID.randomUUID());
+        ae.setMessageId(msgId);
         repo.save(ae);
     }
 
@@ -37,6 +38,6 @@ public class AttachmentsRepoTest {
 
     @Test
     public void findByMessageIdTest() {
-        Assert.assertNotNull(repo.findByMessageId("msgid"));
+        Assert.assertNotNull(repo.findByMessageId(msgId));
     }
 }

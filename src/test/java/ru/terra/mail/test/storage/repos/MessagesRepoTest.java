@@ -25,12 +25,12 @@ public class MessagesRepoTest {
     @Autowired
     public MessagesRepo repo;
     public static final Long createTime = new Date().getTime();
-
+    private UUID folderId = UUID.randomUUID();
     @Before
     public void setUp() {
         MessageEntity me = new MessageEntity();
-        me.setGuid(UUID.randomUUID().toString());
-        me.setFolderId("folder_id");
+        me.setGuid(UUID.randomUUID());
+        me.setFolderId(folderId);
         me.setCreateDate(createTime);
         repo.save(me);
     }
@@ -42,7 +42,7 @@ public class MessagesRepoTest {
 
     @Test
     public void findByFolderIdTest() {
-        Assert.assertNotNull(repo.findByFolderId("folder_id"));
+        Assert.assertNotNull(repo.findByFolderId(folderId));
     }
 
     @Test
@@ -52,7 +52,7 @@ public class MessagesRepoTest {
 
     @Test
     public void countByFolderIdTest() {
-        Assert.assertEquals(Integer.valueOf(1), repo.countByFolderId("folder_id"));
+        Assert.assertEquals(Integer.valueOf(1), repo.countByFolderId(folderId));
     }
 
     @Test

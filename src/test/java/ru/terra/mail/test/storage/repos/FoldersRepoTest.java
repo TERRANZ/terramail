@@ -25,7 +25,7 @@ public class FoldersRepoTest {
     @Before
     public void setUp() {
         FolderEntity fe = new FolderEntity();
-        fe.setGuid(UUID.randomUUID().toString());
+        fe.setGuid(UUID.randomUUID());
         fe.setFullName("full_name");
         repo.save(fe);
     }
