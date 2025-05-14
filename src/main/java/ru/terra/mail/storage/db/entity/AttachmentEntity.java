@@ -1,77 +1,39 @@
 package ru.terra.mail.storage.db.entity;
 
 import jakarta.persistence.*;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import ru.terra.mail.core.domain.MailMessageAttachment;
 
 import java.io.Serializable;
+import java.util.UUID;
 
 /**
  * Created by Vadim_Korostelev on 1/24/2017.
  */
 @Entity
+@Data
+@NoArgsConstructor
 public class AttachmentEntity implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
     @Column(name = "id", nullable = false)
     @GeneratedValue(generator = "system-uuid")
-    private String guid;
+    private UUID guid;
     @Lob
     private String type;
     @Lob
     private String fileName;
     @Lob
-    private String messageId;
+    private UUID messageId;
     @Lob
     private String localFileName;
 
-    public AttachmentEntity() {
-    }
-
-    public AttachmentEntity(MailMessageAttachment mma, String parentId) {
+    public AttachmentEntity(final MailMessageAttachment mma, final UUID parentId) {
         this.messageId = parentId;
         this.type = mma.getType();
         this.fileName = mma.getFileName();
         this.localFileName = mma.getLocalFileName();
-    }
-
-    public String getMessageId() {
-        return messageId;
-    }
-
-    public void setMessageId(String messageId) {
-        this.messageId = messageId;
-    }
-
-    public String getGuid() {
-        return guid;
-    }
-
-    public void setGuid(String guid) {
-        this.guid = guid;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public String getFileName() {
-        return fileName;
-    }
-
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
-    }
-
-    public String getLocalFileName() {
-        return localFileName;
-    }
-
-    public void setLocalFileName(String localFileName) {
-        this.localFileName = localFileName;
     }
 }

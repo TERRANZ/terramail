@@ -5,13 +5,14 @@ import ru.terra.mail.core.domain.MailFolder;
 import ru.terra.mail.core.domain.MailMessage;
 
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * Created by terranz on 19.10.16.
  */
 @Component
 public class MessagesModel extends AbstractModel<MailMessage> {
-    public Set<MailMessage> getStoredMessages(String folderGuid) {
+    public Set<MailMessage> getStoredMessages(UUID folderGuid) {
         return getStorage().getFolderMessages(folderGuid);
     }
 

@@ -4,9 +4,8 @@ import com.beust.jcommander.internal.Lists;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableSet;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -30,7 +29,7 @@ import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMultipart;
 import java.io.File;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -39,6 +38,7 @@ import java.util.stream.Collectors;
  */
 @Component
 @Scope("singleton")
+@Slf4j
 public class BasicStorageImpl implements AbstractStorage {
     private static final int PAGE_SIZE = 10;
 
@@ -49,20 +49,18 @@ public class BasicStorageImpl implements AbstractStorage {
     @Autowired
     private AttachmentsRepo attachmentsRepo;
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
-
     @Override
     public ObservableList<MailFolder> getAllFoldersTree() {
         final Map<String, MailFolder> foldersMap = new HashMap<>();
         MailFolder inbox = null;
-        final Map<String, FolderEntity> storedFoldersMap = new HashMap<>();
+        final Map<UUID, FolderEntity> storedFoldersMap = new HashMap<>();
         try {
             foldersRepo.findAll().forEach(f -> {
                 storedFoldersMap.put(f.getGuid(), f);
                 foldersMap.put(f.getFullName(), new MailFolder(f));
             });
         } catch (Exception e) {
-            logger.error("Unable to save folder", e);
+            log.error("Unable to save folder", e);
         }
         for (final FolderEntity fe : storedFoldersMap.values()) {
             if (!Objects.equals(fe.getParentFolderId(), "-1")) {
@@ -70,77 +68,69 @@ public class BasicStorageImpl implements AbstractStorage {
                 final MailFolder parentFolder = foldersMap.get(parentEntity.getFullName());
                 final MailFolder childFolder = foldersMap.get(fe.getFullName());
                 parentFolder.getChildFolders().add(childFolder);
-            } else
-                inbox = foldersMap.get(fe.getFullName());
+            } else inbox = foldersMap.get(fe.getFullName());
         }
-        if (inbox == null)
-            return FXCollections.emptyObservableList();
+        if (inbox == null) return FXCollections.emptyObservableList();
         return FXCollections.observableArrayList(inbox);
     }
 
     @Override
-    public void storeFolders(final List<MailFolder> mailFolders, final String parentId) {
+    public void storeFolders(final List<MailFolder> mailFolders, final UUID parentId) {
         if (mailFolders != null) {
             mailFolders.forEach(folder -> {
                 try {
-                    final FolderEntity folderEntity =
-                            Optional
-                                    .ofNullable(foldersRepo.findByFullName(folder.getFullName()))
-                                    .orElse(new FolderEntity(folder, parentId));
+                    final FolderEntity folderEntity = Optional.ofNullable(foldersRepo.findByFullName(folder.getFullName())).orElse(new FolderEntity(folder, parentId));
                     folderEntity.setUnreadMessages(folder.getUnreadMessages());
                     foldersRepo.save(folderEntity);
                     folder.setGuid(folderEntity.getGuid());
                     storeFolders(folder.getChildFolders(), folderEntity.getGuid());
                 } catch (Exception e) {
-                    logger.error("Unable to load folder: " + folder, e);
+                    log.error("Unable to load folder: {}", folder, e);
                 }
             });
         }
     }
 
     @Override
-    public ObservableSet<MailMessage> getFolderMessages(final String folderGuid) {
-        return FXCollections.observableSet(messagesRepo
-                .findByFolderId(folderGuid).stream().map(m -> {
-                    final MailMessage ret = new MailMessage(m, folderGuid);
-                    final List<AttachmentEntity> attachments = attachmentsRepo.findByMessageId(m.getGuid());
-                    if (attachments != null && attachments.size() > 0) {
-                        attachments.forEach(a -> ret.getAttachments().add(new MailMessageAttachment(a)));
-                    }
-                    return ret;
-                }).collect(Collectors.toSet()));
+    public ObservableSet<MailMessage> getFolderMessages(final UUID folderGuid) {
+        return FXCollections.observableSet(messagesRepo.findByFolderId(folderGuid).stream().map(m -> {
+            final MailMessage ret = new MailMessage(m, folderGuid);
+            final List<AttachmentEntity> attachments = attachmentsRepo.findByMessageId(m.getGuid());
+            if (attachments != null && !attachments.isEmpty()) {
+                attachments.forEach(a -> ret.getAttachments().add(new MailMessageAttachment(a)));
+            }
+            return ret;
+        }).collect(Collectors.toSet()));
     }
 
     @Override
-    public void storeFolderMessageInFolder(final String folderId, final MailMessage m) {
+    public void storeFolderMessageInFolder(final UUID folderId, final MailMessage m) {
         MessageEntity me = new MessageEntity(m, folderId);
         if (messagesRepo.findByCreateDate(me.getCreateDate()) == null) {
             try {
                 messagesRepo.save(me);
                 m.getAttachments().parallelStream().map(mma -> new AttachmentEntity(mma, me.getGuid())).forEach(attachmentsRepo::save);
             } catch (Exception e) {
-                logger.error("Unable to create new message entity", e);
+                log.error("Unable to create new message entity", e);
             }
         }
     }
 
     @Override
-    public Integer countMessagesInFolder(final String folderId) {
+    public Integer countMessagesInFolder(final UUID folderId) {
         return messagesRepo.countByFolderId(folderId);
     }
 
     @Override
     public void loadFromFolder(final MailFolder folder) {
-        if (folder.getFolder() == null)
-            return;
+        if (folder.getFolder() == null) return;
         try {
-            if (!folder.getFolder().isOpen())
-                folder.getFolder().open(Folder.READ_ONLY);
+            if (!folder.getFolder().isOpen()) folder.getFolder().open(Folder.READ_ONLY);
             int start = 1;
             final int count = folder.getFolder().getMessageCount();
-            logger.info("Count: " + count + " in folder " + folder.getFullName());
+            log.info("Count: " + count + " in folder " + folder.getFullName());
             while (start < count) {
-                final int end = count - start < PAGE_SIZE ? count - start : PAGE_SIZE;
+                final int end = Math.min(count - start, PAGE_SIZE);
                 final Map<Long, Message> messages = new HashMap<>();
                 Arrays.stream(folder.getFolder().getMessages(start, end + start)).forEach(m -> {
                     try {
@@ -160,18 +150,18 @@ public class BasicStorageImpl implements AbstractStorage {
                 });
 
                 start += end;
-                if (messages.size() > 0) {
+                if (!messages.isEmpty()) {
                     folder.notifyModified();
                 }
             }
-            logger.info("Messages in folder " + folder.getFullName() + " : " + messagesRepo.countByFolderId(folder.getGuid()));
+            log.info("Messages in folder {} : {}", folder.getFullName(), messagesRepo.countByFolderId(folder.getGuid()));
         } catch (Exception e) {
-            logger.error("Unable to load messages from server", e);
+            log.error("Unable to load messages from server", e);
         } finally {
             try {
                 folder.getFolder().close(true);
             } catch (MessagingException e) {
-                logger.error("Unable to close folder from server", e);
+                log.error("Unable to close folder from server", e);
             }
         }
     }
@@ -201,13 +191,12 @@ public class BasicStorageImpl implements AbstractStorage {
                 if (serverFolder != null) {
                     storedFolder.setFolder(serverFolder.getFolder());
                     storedFolder.setUnreadMessages(serverFolder.getUnreadMessages());
-                } else
-                    storedFolder.setDeleted(true);
+                } else storedFolder.setDeleted(true);
             }
             mergeFoldersTree(storedFolders, serverFoldersMap);
         }
 
-        storeFolders(storedFolders, "-1");
+        storeFolders(storedFolders, null);
         return storedFolders;
     }
 
@@ -217,8 +206,7 @@ public class BasicStorageImpl implements AbstractStorage {
         for (final MailFolder storedFolder : storedFolders)
             if (!serverFoldersMap.containsKey(storedFolder.getFullName()))
                 foldersToAdd.add(serverFoldersMap.get(storedFolder.getFullName()));
-            else
-                mergeFoldersTree(storedFolder.getChildFolders(), serverFoldersMap);
+            else mergeFoldersTree(storedFolder.getChildFolders(), serverFoldersMap);
 
         storedFolders.addAll(foldersToAdd);
     }
@@ -233,27 +221,20 @@ public class BasicStorageImpl implements AbstractStorage {
     private void processMailMessageAttachments(final MailMessage mm) {
         final Message msg = mm.getMessage();
         try {
-            if (msg.getContent() instanceof MimeMultipart) {
-                final MimeMultipart multipart = (MimeMultipart) msg.getContent();
+            if (msg.getContent() instanceof MimeMultipart multipart) {
                 for (int j = 0; j < multipart.getCount(); j++) {
                     final BodyPart bodyPart = multipart.getBodyPart(j);
                     final DataHandler handler = bodyPart.getDataHandler();
                     final String targetFileName = StartUpParameters.getInstance().getAttachments() + File.separator + mm.getFolderGuid() + File.separator + mm.getGuid();
-                    mm.getAttachments().add(new MailMessageAttachment(
-                            handler.getContentType(),
-                            handler.getName(),
-                            targetFileName + File.separator + "attachment_" + String.valueOf(j),
-                            false)
-                    );
+                    mm.getAttachments().add(new MailMessageAttachment(handler.getContentType(), handler.getName(), false, targetFileName + File.separator + "attachment_" + j));
 //                    ArchiveWorker.getInstance().saveAttachment(targetFileName, targetFileName + File.separator + "attachment_" + String.valueOf(j), handler.getInputStream());
                 }
                 if (msg.getContentType().startsWith("text/html") || msg.getContentType().startsWith("text/plain")) {
-                    mm.setMessageBody(IOUtils.toString(msg.getInputStream(), Charset.forName("UTF-8")));
+                    mm.setMessageBody(IOUtils.toString(msg.getInputStream(), StandardCharsets.UTF_8));
                 }
-            } else
-                mm.setMessageBody(msg.getContent().toString());
+            } else mm.setMessageBody(msg.getContent().toString());
         } catch (Exception e) {
-            logger.error("Unable to process mail message", e);
+            log.error("Unable to process mail message", e);
         }
     }
 }

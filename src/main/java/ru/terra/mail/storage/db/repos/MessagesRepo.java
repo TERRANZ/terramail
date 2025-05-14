@@ -7,17 +7,18 @@ import ru.terra.mail.storage.db.entity.MessageEntity;
 
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * Created by Vadim_Korostelev on 1/24/2017.
  */
-public interface MessagesRepo extends JpaRepository<MessageEntity, String> {
-    List<MessageEntity> findByFolderId(String folderId);
+public interface MessagesRepo extends JpaRepository<MessageEntity, UUID> {
+    List<MessageEntity> findByFolderId(UUID folderId);
 
     MessageEntity findByCreateDate(Long createDate);
 
     @Query(value = "select count(id) from message_entity where folder_id=?1", nativeQuery = true)
-    Integer countByFolderId(String folderId);
+    Integer countByFolderId(UUID folderId);
 
     @Query(value = "from MessageEntity as me where createDate in :dates")
     List<MessageEntity> findByDatesInList(@Param("dates") Set<Long> dates);
