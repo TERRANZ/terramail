@@ -23,7 +23,7 @@ public class ArchiveWorker {
             if (!Files.exists(p)) {
                 createEmptyZip(p.toFile());
             }
-            zipfs = FileSystems.newFileSystem(p, null);
+            zipfs = FileSystems.newFileSystem(p);
         } catch (Exception e) {
             logger.error("Unable to create ZIP filesystem", e);
         }

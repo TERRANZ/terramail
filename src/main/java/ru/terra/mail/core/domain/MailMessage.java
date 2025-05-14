@@ -1,6 +1,6 @@
 package ru.terra.mail.core.domain;
 
-import org.codehaus.jackson.annotate.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import ru.terra.mail.storage.db.entity.MessageEntity;
 
 import javax.mail.Header;

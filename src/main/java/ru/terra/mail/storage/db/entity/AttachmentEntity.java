@@ -1,9 +1,9 @@
 package ru.terra.mail.storage.db.entity;
 
+import jakarta.persistence.*;
 import org.hibernate.annotations.GenericGenerator;
 import ru.terra.mail.core.domain.MailMessageAttachment;
 
-import javax.persistence.*;
 import java.io.Serializable;
 
 /**

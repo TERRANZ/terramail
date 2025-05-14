@@ -1,9 +1,8 @@
 package ru.terra.mail.storage.db.entity;
 
-import org.hibernate.annotations.GenericGenerator;
+import jakarta.persistence.*;
 import ru.terra.mail.core.domain.MailMessage;
 
-import javax.persistence.*;
 import java.io.Serializable;
 
 /**
@@ -19,7 +18,6 @@ public class MessageEntity implements Serializable {
     @Basic(optional = false)
     @Column(name = "id", nullable = false)
     @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name = "system-uuid", strategy = "org.hibernate.id.UUIDGenerator")
     private String guid;
     private Long createDate;
     @Lob
