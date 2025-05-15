@@ -8,12 +8,12 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javafx.util.Pair;
+import lombok.val;
 import org.springframework.stereotype.Component;
 import ru.terra.mail.gui.core.AbstractDialog;
 import ru.terra.mail.gui.core.AbstractUIView;
 
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,16 +22,16 @@ import java.util.List;
  */
 @Component
 public class StageHelper {
-    private static List<Stage> openedStages = new ArrayList<>();
-    private static StageCloseEventHandler stageCloseEventHandler = new StageCloseEventHandler();
+    private static final List<Stage> openedStages = new ArrayList<>();
+    private static final StageCloseEventHandler stageCloseEventHandler = new StageCloseEventHandler();
 
     public static <T> Pair<Parent, T> loadRoot(String fxmlFileName) {
-        String fxmlFile = GUIConstants.FXML + fxmlFileName;
-        URL location = StageHelper.class.getResource(fxmlFile);
+        val fxmlFile = GUIConstants.FXML + fxmlFileName;
+        val location = StageHelper.class.getResource(fxmlFile);
         Parent root = null;
-        FXMLLoader fxmlLoader = new FXMLLoader();
+        val fxmlLoader = new FXMLLoader();
         try {
-            root = (Parent) fxmlLoader.load(location.openStream());
+            root = fxmlLoader.load(location.openStream());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -40,9 +40,9 @@ public class StageHelper {
 
     public static <T extends AbstractUIView> Pair<Stage, T> openWindow(String fxmlFileName, String title, boolean closeCurr) {
         Pair<Parent, T> windowPair = loadRoot(fxmlFileName);
-        Stage stage = new Stage();
+        val stage = new Stage();
         stage.setOnHidden(stageCloseEventHandler);
-        T controller = (T) windowPair.getValue();
+        T controller = windowPair.getValue();
         controller.setCurrStage(stage);
         openedStages.add(stage);
         stage.setTitle(title);
@@ -56,7 +56,7 @@ public class StageHelper {
 
     public static <T extends AbstractDialog> Pair<Stage, T> openDialog(String fxmlFileName, String title, Stage parent) {
         Pair<Parent, T> windowPair = loadRoot(fxmlFileName);
-        Stage stage = new Stage();
+        val stage = new Stage();
         stage.setTitle(title);
         stage.setScene(new Scene(windowPair.getKey()));
         stage.getScene().getStylesheets().add(GUIConstants.CSS_FILE);
@@ -64,7 +64,7 @@ public class StageHelper {
         stage.initOwner(parent);
         stage.setResizable(false);
         stage.show();
-        T dialogController = (T) windowPair.getValue();
+        T dialogController = windowPair.getValue();
         dialogController.setCurrStage(stage);
         return new Pair<>(stage, dialogController);
     }
@@ -73,7 +73,7 @@ public class StageHelper {
         @Override
         public void handle(WindowEvent windowEvent) {
             openedStages.remove(windowEvent.getTarget());
-            if (openedStages.size() == 0)
+            if (openedStages.isEmpty())
                 System.exit(0);
         }
     }

@@ -1,10 +1,14 @@
 package ru.terra.mail.gui.view.beans;
 
+import lombok.Getter;
+import lombok.Setter;
 import ru.terra.mail.core.domain.MailFolder;
 
 /**
  * Created by terranz on 19.10.16.
  */
+@Getter
+@Setter
 public class FoldersTreeItem {
     private MailFolder mailFolder;
 
@@ -17,13 +21,4 @@ public class FoldersTreeItem {
         String unread = mailFolder.getUnreadMessages() > 0 ? " " + mailFolder.getUnreadMessages() : "";
         return mailFolder.getName() + unread;
     }
-
-    public MailFolder getMailFolder() {
-        return mailFolder;
-    }
-
-    public void setMailFolder(MailFolder mailFolder) {
-        this.mailFolder = mailFolder;
-    }
-
 }

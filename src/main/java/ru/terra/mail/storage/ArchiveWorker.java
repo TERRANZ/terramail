@@ -1,5 +1,6 @@
 package ru.terra.mail.storage;
 
+import lombok.val;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -7,9 +8,13 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.*;
+import java.nio.file.FileSystem;
+import java.nio.file.Paths;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import static java.nio.file.FileSystems.newFileSystem;
+import static java.nio.file.Files.*;
 
 public class ArchiveWorker {
     private static ArchiveWorker instance = new ArchiveWorker();
@@ -18,12 +23,12 @@ public class ArchiveWorker {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private ArchiveWorker() {
-        final Path p = Paths.get("attachments.zip");
+        val p = Paths.get("attachments.zip");
         try {
-            if (!Files.exists(p)) {
+            if (!exists(p)) {
                 createEmptyZip(p.toFile());
             }
-            zipfs = FileSystems.newFileSystem(p);
+            zipfs = newFileSystem(p);
         } catch (Exception e) {
             logger.error("Unable to create ZIP filesystem", e);
         }
@@ -38,10 +43,10 @@ public class ArchiveWorker {
 
     public void saveAttachment(final String folder, final String name, final InputStream stream) {
         try {
-            if (!Files.exists(zipfs.getPath(folder))) {
-                Files.createDirectories(zipfs.getPath(folder));
+            if (!exists(zipfs.getPath(folder))) {
+                createDirectories(zipfs.getPath(folder));
             }
-            Files.copy(stream, zipfs.getPath(name));
+            copy(stream, zipfs.getPath(name));
         } catch (Exception e) {
             logger.error("Unable to save file " + name, e);
         }

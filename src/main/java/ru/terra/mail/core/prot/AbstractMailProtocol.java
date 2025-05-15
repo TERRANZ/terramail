@@ -2,8 +2,8 @@ package ru.terra.mail.core.prot;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import ru.terra.mail.core.domain.MailFolder;
 
 import javax.mail.Folder;
@@ -15,20 +15,20 @@ import java.util.Arrays;
 /**
  * Created by terranz on 18.10.16.
  */
+@Slf4j
 public abstract class AbstractMailProtocol {
     protected Store store;
-    protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public abstract void login(String user, String pass, String server)
             throws MessagingException, GeneralSecurityException;
 
     public ObservableList<MailFolder> listFolders() throws MessagingException {
-        ObservableList<MailFolder> ret = FXCollections.observableArrayList();
+        val ret = FXCollections.<MailFolder>observableArrayList();
         Arrays.stream(store.getPersonalNamespaces()).map(f -> {
             try {
                 return getFolders(f);
             } catch (MessagingException e) {
-                logger.error("Unable to list folders", e);
+                log.error("Unable to list folders", e);
             }
             return null;
         }).forEach(ret::add);
@@ -36,13 +36,13 @@ public abstract class AbstractMailProtocol {
     }
 
     protected MailFolder getFolders(Folder folder) throws MessagingException {
-        MailFolder mailFolder = new MailFolder(folder);
+        val mailFolder = new MailFolder(folder);
         if (folder.list().length > 0) {
             Arrays.stream(folder.list()).forEach(f -> {
                 try {
                     mailFolder.getChildFolders().add(getFolders(f));
                 } catch (MessagingException e) {
-                    logger.error("Unable to get folders", e);
+                    log.error("Unable to get folders", e);
                 }
             });
         }

@@ -1,9 +1,9 @@
 package ru.terra.mail.gui.controller;
 
 import javafx.application.Platform;
+import lombok.val;
 import ru.terra.mail.Main;
 import ru.terra.mail.core.domain.MailFolder;
-import ru.terra.mail.core.domain.MailFoldersTree;
 import ru.terra.mail.core.domain.MailMessage;
 import ru.terra.mail.gui.core.NotificationListener;
 import ru.terra.mail.gui.core.NotificationManager;
@@ -12,7 +12,6 @@ import ru.terra.mail.gui.model.MessagesModel;
 import ru.terra.mail.gui.view.MainWindowView;
 
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -44,12 +43,12 @@ public class MainWindowController implements NotificationListener {
 
     public void showFolders() {
         updateStatus("Folders loading...");
-        final MailFoldersTree treeRoot = foldersModel.getStoredFolders();
+        val treeRoot = foldersModel.getStoredFolders();
         if (treeRoot != null)
             view.setFoldersTreeRoot(treeRoot);
 
         executorService.submit(() -> {
-            final MailFoldersTree result = foldersModel.getTreeRoot();
+            val result = foldersModel.getTreeRoot();
             view.runOnUIThread(() -> view.setFoldersTreeRoot(result));
             updateStatus("Folders loaded");
         });
@@ -67,7 +66,7 @@ public class MainWindowController implements NotificationListener {
     public void folderSelected(final MailFolder mailFolder) {
         Optional.ofNullable(prevSelectedMailFolder).ifPresent(mf -> mf.getSubscribers().clear());
         updateStatus("Messages loading for " + mailFolder.getFullName());
-        final Set<MailMessage> storedMessages = messagesModel.getStoredMessages(mailFolder.getGuid());
+        val storedMessages = messagesModel.getStoredMessages(mailFolder.getGuid());
         view.showMessagesList(storedMessages);
         mailFolder.getSubscribers().add(mf -> view.showMessagesList(messagesModel.getStoredMessages(mailFolder.getGuid())));
         prevSelectedMailFolder = mailFolder;

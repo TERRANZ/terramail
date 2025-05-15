@@ -3,13 +3,12 @@ package ru.terra.mail.gui.view.impl;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.web.WebView;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import ru.terra.mail.core.domain.MailFoldersTree;
 import ru.terra.mail.core.domain.MailMessage;
 import ru.terra.mail.gui.StageHelper;
@@ -24,14 +23,12 @@ import java.net.URL;
 import java.util.Date;
 import java.util.ResourceBundle;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Created by terranz on 18.10.16.
  */
+@Slf4j
 public class MainWindowViewImpl extends AbstractUIView implements MainWindowView {
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
-
     @FXML
     private WebView wvMailViewer;
     @FXML
@@ -61,7 +58,7 @@ public class MainWindowViewImpl extends AbstractUIView implements MainWindowView
 
     private void setColums() {
         colSubject.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getSubject()));
-        colDate.setCellFactory(param -> new TableCell<MessagesTableItem, Date>() {
+        colDate.setCellFactory(param -> new TableCell<>() {
             @Override
             protected void updateItem(Date item, boolean empty) {
                 if (item != null && !empty)
@@ -72,7 +69,7 @@ public class MainWindowViewImpl extends AbstractUIView implements MainWindowView
             try {
                 return new SimpleObjectProperty<>(cellData.getValue().getDate());
             } catch (Exception e) {
-                logger.error("Error", e);
+                log.error("Error", e);
             }
             return new SimpleObjectProperty<>(new Date());
         });
@@ -137,7 +134,7 @@ public class MainWindowViewImpl extends AbstractUIView implements MainWindowView
 
     private void processFolders(final TreeItem<FoldersTreeItem> rootItem, MailFoldersTree mailFoldersTree) {
         rootItem.setExpanded(true);
-        final TreeItem<FoldersTreeItem> treeItem = new TreeItem<>(new FoldersTreeItem(mailFoldersTree.getCurrentFolder()));
+        val treeItem = new TreeItem<>(new FoldersTreeItem(mailFoldersTree.getCurrentFolder()));
         mailFoldersTree.getChildrens().forEach(mft -> processFolders(treeItem, mft));
         rootItem.getChildren().add(treeItem);
     }
@@ -150,9 +147,9 @@ public class MainWindowViewImpl extends AbstractUIView implements MainWindowView
     @Override
     public void showMessagesList(final Set<MailMessage> storedMessages) {
         tvMessages.getItems().clear();
-        ObservableList<MessagesTableItem> displayItems = FXCollections.observableArrayList();
-        if (storedMessages != null && storedMessages.size() > 0) {
-            displayItems.addAll(storedMessages.stream().map(MessagesTableItem::new).collect(Collectors.toList()));
+        val displayItems = FXCollections.<MessagesTableItem>observableArrayList();
+        if (storedMessages != null && !storedMessages.isEmpty()) {
+            displayItems.addAll(storedMessages.stream().map(MessagesTableItem::new).toList());
             tvMessages.setItems(displayItems);
         }
     }
@@ -166,7 +163,7 @@ public class MainWindowViewImpl extends AbstractUIView implements MainWindowView
             if (msg.getMessageBody() != null)
                 wvMailViewer.getEngine().loadContent(msg.getMessageBody());
             else {
-                if (msg.getAttachments() != null && msg.getAttachments().size() > 0) {
+                if (msg.getAttachments() != null && !msg.getAttachments().isEmpty()) {
                     msg.getAttachments().stream()
                             .filter(attachment -> attachment.getType().contains("text"))
                             .forEach(attachment -> wvMailViewer.getEngine()
