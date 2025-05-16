@@ -10,7 +10,6 @@ import lombok.val;
 import org.apache.commons.io.IOUtils;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-import ru.terra.mail.config.StartUpParameters;
 import ru.terra.mail.core.domain.MailFolder;
 import ru.terra.mail.core.domain.MailFoldersTree;
 import ru.terra.mail.core.domain.MailMessage;
@@ -32,6 +31,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static ru.terra.mail.config.StartUpParameters.getInstance;
+
 /**
  * Created by Vadim_Korostelev on 1/24/2017.
  */
@@ -45,6 +46,7 @@ public class BasicStorageImpl implements AbstractStorage {
     private final FoldersRepo foldersRepo;
     private final MessagesRepo messagesRepo;
     private final AttachmentsRepo attachmentsRepo;
+    private final ArchiveManager archiveManager;
 
     @Override
     public ObservableList<MailFolder> getAllFoldersTree() {
@@ -144,7 +146,7 @@ public class BasicStorageImpl implements AbstractStorage {
                     val msg = new MailMessage(m, folder.getGuid());
                     processMailMessageAttachments(msg);
                     storeFolderMessageInFolder(msg.getFolderGuid(), msg);
-                    ArchiveWorker.getInstance().close();
+                    archiveManager.close();
                 });
 
                 start += end;
@@ -224,9 +226,9 @@ public class BasicStorageImpl implements AbstractStorage {
                 for (int j = 0; j < multipart.getCount(); j++) {
                     val bodyPart = multipart.getBodyPart(j);
                     val handler = bodyPart.getDataHandler();
-                    val targetFileName = StartUpParameters.getInstance().getAttachments() + File.separator + mm.getFolderGuid() + File.separator + mm.getGuid();
+                    val targetFileName = getInstance().getAttachments() + File.separator + msg.getFolder().getFullName() + File.separator + mm.getGuid();
                     mm.getAttachments().add(new MailMessageAttachment(handler.getContentType(), handler.getName(), true, targetFileName + File.separator + "attachment_" + j));
-//                    ArchiveWorker.getInstance().saveAttachment(targetFileName, targetFileName + File.separator + "attachment_" + j, handler.getInputStream());
+                    archiveManager.saveAttachment(targetFileName, targetFileName + File.separator + "attachment_" + j, handler.getInputStream());
                 }
                 if (msg.getContentType().startsWith("text/html") || msg.getContentType().startsWith("text/plain")) {
                     mm.setMessageBody(IOUtils.toString(msg.getInputStream(), StandardCharsets.UTF_8));
