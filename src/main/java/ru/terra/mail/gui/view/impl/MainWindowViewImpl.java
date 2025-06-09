@@ -48,7 +48,7 @@ public class MainWindowViewImpl extends AbstractUIView implements MainWindowView
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         controller = new MainWindowController(this);
-        setColums();
+        setColumns();
 
         controller.initialize();
 
@@ -56,7 +56,7 @@ public class MainWindowViewImpl extends AbstractUIView implements MainWindowView
         setMessagesTableSelectionEvents();
     }
 
-    private void setColums() {
+    private void setColumns() {
         colSubject.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getSubject()));
         colDate.setCellFactory(param -> new TableCell<>() {
             @Override
@@ -79,7 +79,7 @@ public class MainWindowViewImpl extends AbstractUIView implements MainWindowView
     private void setMessagesTableSelectionEvents() {
         tvMessages.setOnMouseClicked(event -> {
             if (event.getClickCount() == 2) {
-                MessagesTableItem item = tvMessages.getSelectionModel().getSelectedItem();
+                val item = tvMessages.getSelectionModel().getSelectedItem();
                 if (item != null) {
                     controller.showMessage(item.getMessage());
                 }
@@ -90,8 +90,7 @@ public class MainWindowViewImpl extends AbstractUIView implements MainWindowView
     private void setFolderSelectionEvents() {
         tvFolders.setOnMouseClicked(event -> {
             if (event.getClickCount() == 2) {
-                TreeItem<FoldersTreeItem> item = tvFolders.getSelectionModel().getSelectedItem();
-                controller.folderSelected(item.getValue().getMailFolder());
+                controller.folderSelected(tvFolders.getSelectionModel().getSelectedItem().getValue().getMailFolder());
                 event.consume();
             }
         });
@@ -106,7 +105,7 @@ public class MainWindowViewImpl extends AbstractUIView implements MainWindowView
     }
 
     public void showSource(ActionEvent actionEvent) {
-        MessagesTableItem selected = tvMessages.getSelectionModel().getSelectedItem();
+        val selected = tvMessages.getSelectionModel().getSelectedItem();
         if (selected == null)
             return;
         StageHelper.<MailSourceWindow>openWindow("w_source.fxml", "Source", false).getValue().loadMailSource(selected.getMessage().getHeaders());
