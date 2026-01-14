@@ -1,18 +1,12 @@
 plugins {
-    id 'org.springframework.boot' version '2.7.0'
-    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
-    id 'com.bmuschko.docker-remote-api' version '7.1.0'
-    id 'org.openjfx.javafxplugin' version '0.0.10'
+    id 'org.springframework.boot' version '4.0.1'
+    id 'io.spring.dependency-management' version '1.1.7'
+    id 'org.openjfx.javafxplugin' version '0.1.0'
     id 'java'
 }
 
-import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
-import com.bmuschko.gradle.docker.tasks.image.DockerRemoveImage
-import com.bmuschko.gradle.docker.tasks.image.Dockerfile
-
 group = 'ru.terra.mail'
 version = '1'
-sourceCompatibility = '11'
 
 configurations {
     compileOnly {
@@ -36,55 +30,26 @@ dependencies {
     implementation 'commons-io:commons-io:2.5'
     implementation 'org.controlsfx:controlsfx:11.1.1'
     implementation 'org.openjfx:javafx-web:18'
-    compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'com.h2database:h2'
     runtimeOnly 'org.postgresql:postgresql'
-    annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'org.hsqldb:hsqldb:2.6.1'
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.assertj:assertj-core:3.23.1'
+    compileOnly("org.projectlombok:lombok:1.18.42")
+	annotationProcessor("org.projectlombok:lombok:1.18.42")
+	
+	testCompileOnly("org.projectlombok:lombok:1.18.42")
+	testAnnotationProcessor("org.projectlombok:lombok:1.18.42")
 }
 
 test {
     useJUnitPlatform()
 }
 
-def dockerBuildDir = 'build/docker/'
-task createDockerfile(type: Dockerfile) {
-    destFile = project.file("$dockerBuildDir/Dockerfile")
-    from 'adoptopenjdk/openjdk11'
-    runCommand 'mkdir /app'
-    copyFile 'terramail-1.jar', '/app/app.jar'
-    entryPoint 'java'
-    defaultCommand '-jar', '/app/app.jar'
-}
-
-def imageVersion = '1.0'
-
-task syncJar(type: Copy) {
-    dependsOn assemble
-    from 'build/libs/terramail-1.jar'
-    into dockerBuildDir
-}
-
-task removeImage(type: DockerRemoveImage) {
-    targetImageId("vkorostelev/terramail:$imageVersion")
-    onError { exc ->
-        if (exc.message != null && !exc.message.contains('NotModifiedException')) {
-            throw new RuntimeException(exc)
-        }
-    }
-}
-
-task buildImage(type: DockerBuildImage) {
-    dependsOn createDockerfile, syncJar
-    images.add('terramail/terramail:latest')
-
-}
 
 javafx {
-    version = "18"
+    version = "21"
     modules = [ 'javafx.controls', 'javafx.fxml', 'javafx.web']
 }
