@@ -1,0 +1,46 @@
+# Gradle
+.gradle/
+build/
+!gradle-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+.project
+.classpath
+.settings/
+.metadata/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Application logs
+*.log
+*.log.*
+~/.terramail/
+
+# Attachments
+attachments/
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~
+
+# JDK
+target/
+
+# Build artifacts
+*.jar
+*.war
+*.ear
+
+# Native library
+*.dll
+*.so
+*.dylib

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.MenuButton?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TreeView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Text?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.terramail.controller.FolderTreeController"
+      styleClass="folder-tree-panel">
+    
+    <children>
+        <!-- Header with account info and actions -->
+        <HBox styleClass="panel-header" alignment="CENTER_LEFT">
+            <children>
+                <Text text="Folders" styleClass="panel-title"/>
+                <HBox HBox.hgrow="ALWAYS"/>
+                
+                <!-- Account selector -->
+                <MenuButton fx:id="accountMenu" text="Account" styleClass="account-menu">
+                    <items>
+                        <MenuItem text="Account 1"/>
+                        <MenuItem text="Add Account..."/>
+                    </items>
+                </MenuButton>
+                
+                <!-- Refresh button -->
+                <Button fx:id="refreshButton" text="Refresh" 
+                        styleClass="icon-button" onAction="#handleRefresh"/>
+            </children>
+            <padding>
+                <Insets bottom="5" left="10" right="10" top="10"/>
+            </padding>
+        </HBox>
+        
+        <!-- Folder tree -->
+        <TreeView fx:id="folderTreeView" VBox.vgrow="ALWAYS">
+            <padding>
+                <Insets bottom="10" left="5" right="5" top="5"/>
+            </padding>
+        </TreeView>
+    </children>
+</VBox>
