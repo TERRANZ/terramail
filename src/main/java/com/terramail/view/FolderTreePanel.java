@@ -51,4 +51,11 @@ public class FolderTreePanel extends Pane {
     public SimpleObjectProperty<EmailFolder> folderSelectedProperty() {
         return folderSelected;
     }
+
+    /**
+     * Gets the currently selected folder.
+     */
+    public EmailFolder getSelectedFolder() {
+        return folderSelected.get();
+    }
 }

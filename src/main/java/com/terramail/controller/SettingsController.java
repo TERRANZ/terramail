@@ -49,6 +49,9 @@ public class SettingsController {
     private TextField organizationField;
 
     @FXML
+    private ToggleGroup imapEnabledGroup;
+
+    @FXML
     private RadioButton imapEnabledYes;
 
     @FXML
@@ -65,6 +68,9 @@ public class SettingsController {
 
     @FXML
     private PasswordField imapPasswordField;
+
+    @FXML
+    private ToggleGroup smtpEnabledGroup;
 
     @FXML
     private RadioButton smtpEnabledYes;
@@ -90,10 +96,32 @@ public class SettingsController {
     @FXML
     private Button saveButton;
 
+    @FXML
+    private ComboBox<Integer> syncIntervalCombo;
+
+    @FXML
+    private CheckBox systemTrayCheck;
+
+    @FXML
+    private CheckBox showPreviewsCheck;
+
+    @FXML
+    private ComboBox<String> defaultFormatCombo;
+
     /**
      * Initializes the controller.
      */
     public void initialize() {
+        // Create ToggleGroup instances programmatically since ToggleGroup is not a Node
+        // and cannot be placed in FXML layout containers
+        imapEnabledGroup = new ToggleGroup();
+        imapEnabledYes.setToggleGroup(imapEnabledGroup);
+        imapEnabledNo.setToggleGroup(imapEnabledGroup);
+
+        smtpEnabledGroup = new ToggleGroup();
+        smtpEnabledYes.setToggleGroup(smtpEnabledGroup);
+        smtpEnabledNo.setToggleGroup(smtpEnabledGroup);
+
         loadAccounts();
         setupEventHandlers();
         setupComboBox();

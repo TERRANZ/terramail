@@ -6,7 +6,7 @@ import com.terramail.service.SyncService;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.layout.StackPane;
+import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 
 import java.sql.SQLException;
@@ -49,9 +49,9 @@ public class TerramailApp extends Application {
     public void start(Stage primaryStage) {
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/base_view.fxml"));
-            StackPane root = fxmlLoader.load();
+            BorderPane root = fxmlLoader.load();
 
-            Scene scene = new Scene(root, 1200, 800);
+            var scene = new Scene(root, 1200, 800);
             scene.getStylesheets().add(getClass().getResource("/styles/main.css").toExternalForm());
 
             primaryStage.setTitle(PRIMARY_STAGE_TITLE);
