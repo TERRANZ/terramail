@@ -21,6 +21,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import com.zaxxer.hikari.HikariDataSource;
 
 public class MainFrame extends JFrame {
@@ -148,12 +149,65 @@ public class MainFrame extends JFrame {
             @Override
             protected Void doInBackground() {
                 try {
-                    publish("Resyncing folder: " + folder.getName());
-                    List<com.terramail.model.Message> messages = emailService.fetchMessages(folder);
-                    for (com.terramail.model.Message msg : messages) {
-                        messageRepository.save(msg);
-                    }
-                    appState.setSyncStatus("Resynced " + folder.getName() + " (" + messages.size() + " messages)");
+                    appState.setActiveFolderId(folder.getId());
+                    List<SortOrder.Field> fields = List.of(SortOrder.Field.DATE, SortOrder.Field.SUBJECT, SortOrder.Field.FROM, SortOrder.Field.TO);
+                    SortOrder currentSort = messageTableModel.getSortOrder();
+                    SortOrder.Field currentField = currentSort.getField();
+                    SortOrder.Field firstField = fields.stream()
+                        .filter(f -> f == currentField)
+                        .findFirst()
+                        .orElse(fields.get(0));
+                    SortOrder newSort = new SortOrder(firstField, SortOrder.Direction.DESC);
+                    messageTableModel.setSortOrder(newSort);
+
+                    // Run DB load and server fetch in parallel using CompletableFuture
+                    java.util.concurrent.CompletableFuture<List<com.terramail.model.Message>> dbLoadFuture = java.util.concurrent.CompletableFuture.supplyAsync(() -> {
+                        try {
+                            return messageRepository.findByFolderId(folder.getId(), newSort);
+                        } catch (Exception e) {
+                            return List.of();
+                        }
+                    });
+
+                    java.util.concurrent.CompletableFuture<List<com.terramail.model.Message>> serverFetchFuture = java.util.concurrent.CompletableFuture.supplyAsync(() -> {
+                        try {
+                            publish("Fetching from server: " + folder.getName());
+                            return emailService.fetchMessages(folder);
+                        } catch (Exception e) {
+                            publish("Fetch failed: " + e.getMessage());
+                            return List.of();
+                        }
+                    });
+
+                    // When server fetch completes, save to DB and load final merged result
+                    CompletableFuture<Void> mergeFuture = serverFetchFuture.thenAccept(serverMessages -> {
+                        try {
+                            for (com.terramail.model.Message msg : serverMessages) {
+                                messageRepository.save(msg);
+                            }
+                            if (!serverMessages.isEmpty()) {
+                                appState.setSyncStatus("Resynced " + folder.getName() + " (" + serverMessages.size() + " messages)");
+                            }
+                        } catch (Exception e) {
+                            publish("Save failed: " + e.getMessage());
+                        }
+                    }).thenAccept(v -> {
+                        // After server fetch + save completes, load final state from DB and update UI
+                        try {
+                            List<com.terramail.model.Message> finalMessages = messageRepository.findByFolderId(folder.getId(), newSort);
+                            SwingUtilities.invokeLater(() -> messageTableModel.setMessages(finalMessages));
+                        } catch (Exception e) {
+                            publish("Load failed: " + e.getMessage());
+                        }
+                    });
+
+                    // Wait for DB load to complete and update UI with cached data
+                    List<com.terramail.model.Message> dbMessages = dbLoadFuture.join();
+                    SwingUtilities.invokeLater(() -> messageTableModel.setMessages(dbMessages));
+
+                    // Wait for server fetch + save + final load to complete
+                    mergeFuture.join();
+
                 } catch (Exception e) {
                     publish("Resync failed: " + e.getMessage());
                 }
@@ -167,19 +221,6 @@ public class MainFrame extends JFrame {
 
             @Override
             protected void done() {
-                appState.setActiveFolderId(folder.getId());
-                List<SortOrder.Field> fields = List.of(SortOrder.Field.DATE, SortOrder.Field.SUBJECT, SortOrder.Field.FROM, SortOrder.Field.TO);
-                SortOrder currentSort = messageTableModel.getSortOrder();
-                SortOrder.Field currentField = currentSort.getField();
-                SortOrder.Field firstField = fields.stream()
-                    .filter(f -> f == currentField)
-                    .findFirst()
-                    .orElse(fields.get(0));
-                SortOrder newSort = new SortOrder(firstField, SortOrder.Direction.DESC);
-                messageTableModel.setSortOrder(newSort);
-
-                List<com.terramail.model.Message> messages = messageRepository.findByFolderId(folder.getId(), newSort);
-                messageTableModel.setMessages(messages);
             }
         };
         worker.execute();

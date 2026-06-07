@@ -55,7 +55,7 @@ public class EmailService {
             store.connect(settings.getImapUser(), settings.getImapPassword());
             logger.info("Successfully connected to IMAP server: " + settings.getImapHost() + ":" + settings.getImapPort());
 
-            jakarta.mail.Folder imapFolder = store.getFolder(folder.getName());
+            jakarta.mail.Folder imapFolder = store.getFolder(folder.getImapPath());
             if (imapFolder == null) {
                 logger.warning("IMAP folder not found: " + folder.getName());
                 return messages;

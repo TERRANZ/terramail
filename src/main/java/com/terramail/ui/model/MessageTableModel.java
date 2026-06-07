@@ -4,6 +4,9 @@ import com.terramail.model.Message;
 import com.terramail.model.SortOrder;
 
 import javax.swing.table.AbstractTableModel;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -134,7 +137,12 @@ public class MessageTableModel extends AbstractTableModel {
         switch (column) {
             case 0: return msg.getSubject() != null ? msg.getSubject() : "";
             case 1: return msg.getFrom() != null ? msg.getFrom() : "";
-            case 2: return msg.getDate() != null ? dateFormatter.format(msg.getDate()) : "";
+            case 2:
+                if (msg.getDate() != null) {
+                    LocalDateTime dateTime = LocalDateTime.ofInstant(msg.getDate(), ZoneId.systemDefault());
+                    return dateFormatter.format(dateTime);
+                }
+                return "";
             case 3: return msg.getTo() != null ? msg.getTo() : "";
             case 4: return msg.getCc() != null ? msg.getCc() : "";
             case 5: return msg.isSeen() ? "Yes" : "No";

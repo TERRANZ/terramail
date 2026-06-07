@@ -225,7 +225,8 @@ public class MessageRepositoryImpl implements MessageRepository {
         msg.setTo(rs.getString("to"));
         msg.setCc(rs.getString("cc"));
         msg.setSubject(rs.getString("subject"));
-        msg.setDate(rs.getObject("date", Instant.class));
+        Timestamp ts = rs.getTimestamp("date");
+        msg.setDate(ts != null ? ts.toInstant() : null);
         msg.setBody(rs.getString("body"));
         msg.setSeen(rs.getBoolean("seen"));
         msg.setFlagged(rs.getBoolean("flagged"));
