@@ -6,11 +6,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class FolderTreeModel {
 
@@ -22,7 +18,7 @@ public class FolderTreeModel {
         treeModel = new DefaultTreeModel(root);
     }
 
-     public void setFolders(List<Folder> folders) {
+    public void setFolders(List<Folder> folders) {
         root.removeAllChildren();
 
         // Build hierarchical tree structure based on IMAP path
@@ -44,6 +40,10 @@ public class FolderTreeModel {
 
             if (parentPath == null || !pathToNode.containsKey(parentPath)) {
                 // Root level folder - add under "Inbox"
+                if (getRoot().getChildCount() == 0) {
+                    parentNode = new DefaultMutableTreeNode("Inbox");
+                    getRoot().add(parentNode);
+                }
                 TreeNode child = getRoot().getChildAt(0);
                 if (child instanceof DefaultMutableTreeNode existingNode) {
                     parentNode = existingNode;

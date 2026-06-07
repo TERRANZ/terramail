@@ -15,6 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
@@ -24,10 +25,16 @@ public class EmailService {
 
     private AccountSettings settings;
     private final AttachmentService attachmentService;
+    private final int messageLoadingThreads;
 
-    public EmailService(AccountSettings settings, AttachmentService attachmentService) {
+    public EmailService(AccountSettings settings, AttachmentService attachmentService, int messageLoadingThreads) {
         this.settings = settings;
         this.attachmentService = attachmentService;
+        this.messageLoadingThreads = messageLoadingThreads;
+    }
+
+    public EmailService(AccountSettings settings, AttachmentService attachmentService) {
+        this(settings, attachmentService, 10);
     }
 
     public void updateSettings(AccountSettings newSettings) {
@@ -37,7 +44,7 @@ public class EmailService {
     public List<Message> fetchMessages(Folder folder) {
         logger.fine(() -> "fetchMessages called for folder: " + folder.getName() + " (id=" + folder.getId() + ")");
         Session session = createImapSession();
-        List<Message> messages = new ArrayList<>();
+        List<Message> messages = Collections.synchronizedList(new ArrayList<>());
 
         try (Store store = session.getStore("imap")) {
             logger.fine(() -> "Connecting to IMAP store for account: " + settings.getImapUser());
@@ -53,47 +60,86 @@ public class EmailService {
             imapFolder.open(jakarta.mail.Folder.READ_ONLY);
 
             jakarta.mail.Message[] emails = imapFolder.getMessages();
-            logger.info("Folder '" + folder.getName() + "' contains " + emails.length + " messages");
-            AtomicInteger index = new AtomicInteger(0);
+            logger.info("Folder '" + folder.getName() + "' contains " + emails.length + " messages, using " + messageLoadingThreads + " threads for processing");
 
-            for (jakarta.mail.Message email : emails) {
-                try {
-                    logger.fine(() -> "Processing message " + (index.get() + 1) + "/" + emails.length);
-                    Message msg = new Message();
-                    msg.setFolderId(folder.getId());
-                    msg.setFrom(formatAddress(email.getFrom()));
-                    msg.setTo(formatAddress(email.getRecipients(jakarta.mail.Message.RecipientType.TO)));
-                    msg.setCc(formatAddress(email.getRecipients(jakarta.mail.Message.RecipientType.CC)));
-                    msg.setSubject(email.getSubject() != null ? email.getSubject() : "(No Subject)");
-                    msg.setDate(email.getSentDate() != null ? email.getSentDate().toInstant() : Instant.now());
-
-                    logger.fine(() -> "Message " + (index.get() + 1) + " - From: " + msg.getFrom() + ", Subject: " + msg.getSubject());
-
-                    String body = extractBody(email);
-                    msg.setBody(body);
-                    logger.fine(() -> "Message " + (index.get() + 1) + " body length: " + (body != null ? body.length() : 0));
-
-                    msg.setSeen(email.isSet(Flags.Flag.SEEN));
-                    msg.setFlagged(email.isSet(Flags.Flag.FLAGGED));
-                    logger.fine(() -> "Message " + (index.get() + 1) + " - Seen: " + msg.isSeen() + ", Flagged: " + msg.isFlagged());
-
-                    List<AttachmentInfo> attachments = extractAttachments(email, folder.getId());
-                    msg.setAttachments(attachments);
-                    if (!attachments.isEmpty()) {
-                        logger.info(() -> "Message " + (index.get() + 1) + " has " + attachments.size() + " attachment(s): " +
-                                String.join(", ", attachments.stream().map(AttachmentInfo::getName).toList()));
-                    }
-
-                    messages.add(msg);
-                    logger.fine(() -> "Successfully processed message " + (index.get() + 1));
-                } catch (Exception e) {
-                    logger.severe(() -> "Error processing message " + index.get() + ": " + e.getMessage());
-                    logger.fine(() -> "Error stack trace: " + e);
-                }
-                index.incrementAndGet();
+            if (emails.length == 0) {
+                logger.info("Folder '" + folder.getName() + "' is empty, skipping message processing");
+                imapFolder.close(false);
+                return messages;
             }
 
-            logger.info("Folder '" + folder.getName() + "' fetch complete: " + messages.size() + " messages processed");
+            // Use thread pool for parallel message processing
+            ExecutorService executor = Executors.newFixedThreadPool(messageLoadingThreads);
+            List<CompletableFuture<Message>> futures = new ArrayList<>();
+
+            for (int i = 0; i < emails.length; i++) {
+                final int index = i;
+                final jakarta.mail.Message email = emails[i];
+                CompletableFuture<Message> future = CompletableFuture.supplyAsync(() -> {
+                    try {
+                        logger.fine(() -> "Thread-" + Thread.currentThread().getName() + " processing message " + (index + 1) + "/" + emails.length);
+                        Message msg = new Message();
+                        msg.setFolderId(folder.getId());
+                        msg.setFrom(formatAddress(email.getFrom()));
+                        msg.setTo(formatAddress(email.getRecipients(jakarta.mail.Message.RecipientType.TO)));
+                        msg.setCc(formatAddress(email.getRecipients(jakarta.mail.Message.RecipientType.CC)));
+                        msg.setSubject(email.getSubject() != null ? email.getSubject() : "(No Subject)");
+                        msg.setDate(email.getSentDate() != null ? email.getSentDate().toInstant() : Instant.now());
+
+                        logger.fine(() -> "Message " + (index + 1) + " - From: " + msg.getFrom() + ", Subject: " + msg.getSubject());
+
+                        String body = extractBody(email);
+                        msg.setBody(body);
+                        logger.fine(() -> "Message " + (index + 1) + " body length: " + (body != null ? body.length() : 0));
+
+                        msg.setSeen(email.isSet(Flags.Flag.SEEN));
+                        msg.setFlagged(email.isSet(Flags.Flag.FLAGGED));
+                        logger.fine(() -> "Message " + (index + 1) + " - Seen: " + msg.isSeen() + ", Flagged: " + msg.isFlagged());
+
+                        List<AttachmentInfo> attachments = extractAttachments(email, folder.getId());
+                        msg.setAttachments(attachments);
+                        if (!attachments.isEmpty()) {
+                            logger.info(() -> "Message " + (index + 1) + " has " + attachments.size() + " attachment(s): " +
+                                    String.join(", ", attachments.stream().map(AttachmentInfo::getName).toList()));
+                        }
+
+                        logger.fine(() -> "Successfully processed message " + (index + 1));
+                        return msg;
+                    } catch (Exception e) {
+                        logger.severe(() -> "Error processing message " + index + ": " + e.getMessage());
+                        return null;
+                    }
+                }, executor);
+                futures.add(future);
+            }
+
+            // Wait for all futures to complete
+            CompletableFuture<Void> allFutures = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+            try {
+                allFutures.get();
+                // Collect results
+                for (CompletableFuture<Message> future : futures) {
+                    Message msg = future.get();
+                    if (msg != null) {
+                        messages.add(msg);
+                    }
+                }
+            } catch (InterruptedException | ExecutionException e) {
+                logger.severe("Error waiting for message processing to complete: " + e.getMessage());
+                Thread.currentThread().interrupt();
+            } finally {
+                executor.shutdown();
+                try {
+                    if (!executor.awaitTermination(5, TimeUnit.MINUTES)) {
+                        executor.shutdownNow();
+                    }
+                } catch (InterruptedException e) {
+                    executor.shutdownNow();
+                    Thread.currentThread().interrupt();
+                }
+            }
+
+            logger.info("Folder '" + folder.getName() + "' fetch complete: " + messages.size() + " messages processed with " + messageLoadingThreads + " threads");
             imapFolder.close(false);
         } catch (MessagingException e) {
             logger.severe(() -> "Failed to fetch messages from folder '" + folder.getName() + "': " + e.getMessage());

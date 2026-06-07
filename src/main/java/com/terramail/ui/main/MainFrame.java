@@ -15,6 +15,7 @@ import com.terramail.ui.model.MessageTableModel;
 import com.terramail.ui.panels.ComposePanel;
 import com.terramail.ui.panels.SettingsPanel;
 import com.terramail.ui.panels.SyncStatusPanel;
+import com.terramail.util.AppConfig;
 
 import javax.swing.*;
 import java.awt.*;
@@ -54,7 +55,8 @@ public class MainFrame extends JFrame {
         this.messageContentPanel = new MessageContentPanel();
         this.appState = new AppState();
         this.attachmentService = new AttachmentService(Path.of("attachments"));
-        this.emailService = new EmailService(settings, attachmentService);
+        AppConfig appConfig = new AppConfig();
+        this.emailService = new EmailService(settings, attachmentService, appConfig.getMessageLoadingThreads());
 
         HikariDataSource ds = databaseService.getDataSource();
         this.messageRepository = new MessageRepositoryImpl(ds);
@@ -138,19 +140,49 @@ public class MainFrame extends JFrame {
     }
 
     private void onFolderSelected(Folder folder) {
-        appState.setActiveFolderId(folder.getId());
-        List<SortOrder.Field> fields = List.of(SortOrder.Field.DATE, SortOrder.Field.SUBJECT, SortOrder.Field.FROM, SortOrder.Field.TO);
-        SortOrder currentSort = messageTableModel.getSortOrder();
-        SortOrder.Field currentField = currentSort.getField();
-        SortOrder.Field firstField = fields.stream()
-            .filter(f -> f == currentField)
-            .findFirst()
-            .orElse(fields.get(0));
-        SortOrder newSort = new SortOrder(firstField, SortOrder.Direction.DESC);
-        messageTableModel.setSortOrder(newSort);
+        SwingUtilities.invokeLater(() -> resyncFolder(folder));
+    }
 
-        List<com.terramail.model.Message> messages = messageRepository.findByFolderId(folder.getId(), newSort);
-        messageTableModel.setMessages(messages);
+    private void resyncFolder(Folder folder) {
+        SwingWorker<Void, String> worker = new SwingWorker<>() {
+            @Override
+            protected Void doInBackground() {
+                try {
+                    publish("Resyncing folder: " + folder.getName());
+                    List<com.terramail.model.Message> messages = emailService.fetchMessages(folder);
+                    for (com.terramail.model.Message msg : messages) {
+                        messageRepository.save(msg);
+                    }
+                    appState.setSyncStatus("Resynced " + folder.getName() + " (" + messages.size() + " messages)");
+                } catch (Exception e) {
+                    publish("Resync failed: " + e.getMessage());
+                }
+                return null;
+            }
+
+            @Override
+            protected void process(java.util.List<String> chunks) {
+                syncStatusPanel.updateStatus(chunks.get(chunks.size() - 1));
+            }
+
+            @Override
+            protected void done() {
+                appState.setActiveFolderId(folder.getId());
+                List<SortOrder.Field> fields = List.of(SortOrder.Field.DATE, SortOrder.Field.SUBJECT, SortOrder.Field.FROM, SortOrder.Field.TO);
+                SortOrder currentSort = messageTableModel.getSortOrder();
+                SortOrder.Field currentField = currentSort.getField();
+                SortOrder.Field firstField = fields.stream()
+                    .filter(f -> f == currentField)
+                    .findFirst()
+                    .orElse(fields.get(0));
+                SortOrder newSort = new SortOrder(firstField, SortOrder.Direction.DESC);
+                messageTableModel.setSortOrder(newSort);
+
+                List<com.terramail.model.Message> messages = messageRepository.findByFolderId(folder.getId(), newSort);
+                messageTableModel.setMessages(messages);
+            }
+        };
+        worker.execute();
     }
 
     private void onMessageClicked(com.terramail.model.Message message) {
