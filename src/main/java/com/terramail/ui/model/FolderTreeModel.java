@@ -5,9 +5,12 @@ import com.terramail.model.Folder;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
+import javax.swing.tree.TreeNode;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class FolderTreeModel {
 
@@ -19,20 +22,58 @@ public class FolderTreeModel {
         treeModel = new DefaultTreeModel(root);
     }
 
-    public void setFolders(List<Folder> folders) {
+     public void setFolders(List<Folder> folders) {
         root.removeAllChildren();
 
-        List<Folder> sorted = new ArrayList<>(folders);
-        sorted.sort(Comparator.comparing(Folder::getType).thenComparing(Folder::getName));
+        // Build hierarchical tree structure based on IMAP path
+        Map<String, DefaultMutableTreeNode> pathToNode = new HashMap<>();
 
-        DefaultMutableTreeNode accountNode = new DefaultMutableTreeNode("Inbox");
+        // Sort folders by IMAP path depth (parents first)
+        List<Folder> sorted = new ArrayList<>(folders);
+        sorted.sort(Comparator.comparing(Folder::getImapPath).thenComparing(Folder::getName));
+
         for (Folder folder : sorted) {
+            String imapPath = folder.getImapPath();
+            if (imapPath == null || imapPath.isEmpty()) {
+                imapPath = folder.getName();
+            }
+
+            // Find parent path
+            String parentPath = findParentPath(imapPath);
+            DefaultMutableTreeNode parentNode;
+
+            if (parentPath == null || !pathToNode.containsKey(parentPath)) {
+                // Root level folder - add under "Inbox"
+                TreeNode child = getRoot().getChildAt(0);
+                if (child instanceof DefaultMutableTreeNode existingNode) {
+                    parentNode = existingNode;
+                } else {
+                    parentNode = new DefaultMutableTreeNode("Inbox");
+                    getRoot().add(parentNode);
+                }
+            } else {
+                parentNode = pathToNode.get(parentPath);
+            }
+
             DefaultMutableTreeNode folderNode = new DefaultMutableTreeNode(folder);
-            accountNode.add(folderNode);
+            parentNode.add(folderNode);
+            pathToNode.put(imapPath, folderNode);
         }
-        root.add(accountNode);
 
         treeModel.nodeStructureChanged(root);
+    }
+
+    private String findParentPath(String imapPath) {
+        int lastSeparatorIndex = imapPath.lastIndexOf('/');
+        if (lastSeparatorIndex > 0) {
+            return imapPath.substring(0, lastSeparatorIndex);
+        }
+        // Try other separators
+        lastSeparatorIndex = imapPath.lastIndexOf('.');
+        if (lastSeparatorIndex > 0) {
+            return imapPath.substring(0, lastSeparatorIndex);
+        }
+        return null;
     }
 
     public TreeModel getTreeModel() {

@@ -17,4 +17,6 @@ public interface FolderRepository {
     Folder findByName(long accountId, String name);
 
     long countByAccountId(long accountId);
+
+    List<Folder> findByAccountIdAndParentFolderId(long accountId, long parentFolderId);
 }

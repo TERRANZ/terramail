@@ -52,23 +52,27 @@ public class FolderRepositoryImpl implements FolderRepository {
     @Override
     public Folder save(Folder folder) {
         if (folder.getId() > 0) {
-            String sql = "UPDATE folders SET name = ?, type = ? WHERE id = ?";
+            String sql = "UPDATE folders SET name = ?, type = ?, parent_folder_id = ?, imap_path = ? WHERE id = ?";
             try (Connection conn = dataSource.getConnection();
                  PreparedStatement stmt = conn.prepareStatement(sql)) {
                 stmt.setString(1, folder.getName());
                 stmt.setString(2, folder.getType().name());
-                stmt.setLong(3, folder.getId());
+                stmt.setLong(3, folder.getParentFolderId());
+                stmt.setString(4, folder.getImapPath());
+                stmt.setLong(5, folder.getId());
                 stmt.executeUpdate();
             } catch (SQLException e) {
                 throw new RuntimeException("Failed to update folder " + folder.getId(), e);
             }
         } else {
-            String sql = "INSERT INTO folders (account_id, name, type) VALUES (?, ?, ?)";
+            String sql = "INSERT INTO folders (account_id, name, type, parent_folder_id, imap_path) VALUES (?, ?, ?, ?, ?)";
             try (Connection conn = dataSource.getConnection();
                  PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
                 stmt.setLong(1, folder.getAccountId());
                 stmt.setString(2, folder.getName());
                 stmt.setString(3, folder.getType().name());
+                stmt.setLong(4, folder.getParentFolderId());
+                stmt.setString(5, folder.getImapPath());
                 stmt.executeUpdate();
                 try (ResultSet rs = stmt.getGeneratedKeys()) {
                     if (rs.next()) {
@@ -127,12 +131,32 @@ public class FolderRepositoryImpl implements FolderRepository {
         return 0;
     }
 
+    @Override
+    public List<Folder> findByAccountIdAndParentFolderId(long accountId, long parentFolderId) {
+        String sql = "SELECT * FROM folders WHERE account_id = ? AND parent_folder_id = ? ORDER BY type ASC, name ASC";
+        List<Folder> folders = new ArrayList<>();
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setLong(1, accountId);
+            stmt.setLong(2, parentFolderId);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                folders.add(mapRow(rs));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to fetch subfolders for parent " + parentFolderId, e);
+        }
+        return folders;
+    }
+
     private Folder mapRow(ResultSet rs) throws SQLException {
         Folder folder = new Folder();
         folder.setId(rs.getLong("id"));
         folder.setAccountId(rs.getLong("account_id"));
         folder.setName(rs.getString("name"));
         folder.setType(Folder.Type.valueOf(rs.getString("type")));
+        folder.setParentFolderId(rs.getLong("parent_folder_id"));
+        folder.setImapPath(rs.getString("imap_path"));
         return folder;
     }
 }

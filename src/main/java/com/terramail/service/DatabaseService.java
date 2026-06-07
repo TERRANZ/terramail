@@ -66,7 +66,9 @@ public class DatabaseService {
             "  `id` BIGINT AUTO_INCREMENT PRIMARY KEY," +
             "  `account_id` BIGINT NOT NULL," +
             "  `name` VARCHAR(255) NOT NULL," +
-            "  `type` VARCHAR(50) NOT NULL" +
+            "  `type` VARCHAR(50) NOT NULL," +
+            "  `parent_folder_id` BIGINT NOT NULL DEFAULT 0," +
+            "  `imap_path` VARCHAR(1000) NOT NULL DEFAULT ''" +
             ")",
             "CREATE TABLE IF NOT EXISTS messages (" +
             "  `id` BIGINT AUTO_INCREMENT PRIMARY KEY," +

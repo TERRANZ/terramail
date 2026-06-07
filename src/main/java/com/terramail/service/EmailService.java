@@ -90,19 +90,43 @@ public class EmailService {
             jakarta.mail.Folder[] imapFolders = store.getDefaultFolder().list();
 
             for (jakarta.mail.Folder imapFolder : imapFolders) {
-                String name = imapFolder.getName();
-                Folder.Type type = detectFolderType(name, imapFolder);
-
-                Folder folder = new Folder();
-                folder.setName(name);
-                folder.setType(type);
-                folders.add(folder);
+                fetchFoldersRecursive(imapFolder, "", folders);
             }
         } catch (MessagingException e) {
             e.printStackTrace();
             throw new RuntimeException("Failed to list folders from mail server", e);
         }
         return folders;
+    }
+
+    private void fetchFoldersRecursive(jakarta.mail.Folder imapFolder, String parentPath, List<Folder> folders) {
+        String name = imapFolder.getName();
+        char separatorChar = '/';
+        try {
+            char sep = imapFolder.getSeparator();
+            if (sep != 0) separatorChar = sep;
+        } catch (MessagingException e) {
+            separatorChar = '/';
+        }
+        String imapPath = name == null || name.isEmpty() ? parentPath :
+                          (parentPath.isEmpty() ? name : parentPath + separatorChar + name);
+
+        Folder.Type type = detectFolderType(name, imapFolder);
+
+        Folder folder = new Folder();
+        folder.setName(name);
+        folder.setType(type);
+        folder.setImapPath(imapPath);
+        folders.add(folder);
+
+        try {
+            jakarta.mail.Folder[] subFolders = imapFolder.list();
+            for (jakarta.mail.Folder subFolder : subFolders) {
+                fetchFoldersRecursive(subFolder, imapPath, folders);
+            }
+        } catch (MessagingException e) {
+            System.err.println("Error fetching subfolders of '" + name + "': " + e.getMessage());
+        }
     }
 
     private Folder.Type detectFolderType(String name, jakarta.mail.Folder imapFolder) {
