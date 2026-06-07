@@ -1,15 +1,18 @@
 package com.terramail.service;
 
+import com.terramail.model.AccountSettings;
 import com.terramail.model.AttachmentInfo;
 import com.terramail.model.Folder;
 import com.terramail.model.Message;
-import com.terramail.model.AccountSettings;
-
 import jakarta.mail.*;
-import jakarta.mail.internet.*;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.internet.MimeMultipart;
 
-import java.io.*;
-import java.nio.file.*;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -32,8 +35,8 @@ public class EmailService {
         Session session = createImapSession();
         List<Message> messages = new ArrayList<>();
 
-        try (Store store = session.getStore()) {
-            store.connect();
+        try (Store store = session.getStore("imap")) {
+            store.connect(settings.getImapUser(), settings.getImapPassword());
 
             jakarta.mail.Folder imapFolder = store.getFolder(folder.getName());
             if (imapFolder == null) {
@@ -81,21 +84,22 @@ public class EmailService {
         Session session = createImapSession();
         List<Folder> folders = new ArrayList<>();
 
-        try (Store store = session.getStore()) {
-            store.connect();
+        try (Store store = session.getStore("imap")) {
+            store.connect(settings.getImapUser(), settings.getImapPassword());
 
             jakarta.mail.Folder[] imapFolders = store.getDefaultFolder().list();
 
             for (jakarta.mail.Folder imapFolder : imapFolders) {
                 String name = imapFolder.getName();
                 Folder.Type type = detectFolderType(name, imapFolder);
-                
+
                 Folder folder = new Folder();
                 folder.setName(name);
                 folder.setType(type);
                 folders.add(folder);
             }
         } catch (MessagingException e) {
+            e.printStackTrace();
             throw new RuntimeException("Failed to list folders from mail server", e);
         }
         return folders;
@@ -116,7 +120,7 @@ public class EmailService {
         if (lowerName.contains("trash") || lowerName.contains("deleted")) {
             return Folder.Type.TRASH;
         }
-        
+
         return Folder.Type.CUSTOM;
     }
 
@@ -144,6 +148,7 @@ public class EmailService {
         Properties props = new Properties();
         props.put("mail.imap.host", settings.getImapHost());
         props.put("mail.imap.port", String.valueOf(settings.getImapPort()));
+        props.put("mail.store.protocol", "imap");
         if (settings.isImapSsl()) {
             props.put("mail.imap.ssl.enable", "true");
         }
@@ -193,14 +198,14 @@ public class EmailService {
 
     private String htmlToPlain(String html) {
         return html.replaceAll("<br\\s*/?>", "\n")
-            .replaceAll("</p>", "\n\n")
-            .replaceAll("<[^>]+>", "")
-            .replaceAll("&nbsp;", " ")
-            .replaceAll("&lt;", "<")
-            .replaceAll("&gt;", ">")
-            .replaceAll("&amp;", "&")
-            .replaceAll("&quot;", "\"")
-            .trim();
+                .replaceAll("</p>", "\n\n")
+                .replaceAll("<[^>]+>", "")
+                .replaceAll("&nbsp;", " ")
+                .replaceAll("&lt;", "<")
+                .replaceAll("&gt;", ">")
+                .replaceAll("&amp;", "&")
+                .replaceAll("&quot;", "\"")
+                .trim();
     }
 
     private List<AttachmentInfo> extractAttachments(jakarta.mail.Message email, long folderId) throws MessagingException, IOException {
@@ -222,9 +227,9 @@ public class EmailService {
                     }
                     attachmentService.saveAttachment(folderId, filename, Files.newInputStream(tempFile));
                     attachments.add(new AttachmentInfo(
-                        filename,
-                        bodyPart.getSize() > 0 ? bodyPart.getSize() : Files.size(tempFile),
-                        bodyPart.getContentType()
+                            filename,
+                            bodyPart.getSize() > 0 ? bodyPart.getSize() : Files.size(tempFile),
+                            bodyPart.getContentType()
                     ));
                 }
             }

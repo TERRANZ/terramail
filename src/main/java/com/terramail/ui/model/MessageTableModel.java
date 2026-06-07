@@ -20,7 +20,7 @@ public class MessageTableModel extends AbstractTableModel {
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     public MessageTableModel() {
-        this.currentSort = new SortOrder(SortOrder.Field.DATE, SortOrder.Direction.DESCENDING);
+        this.currentSort = new SortOrder(SortOrder.Field.DATE, SortOrder.Direction.DESC);
     }
 
     public void setMessages(List<Message> messages) {
@@ -89,7 +89,7 @@ public class MessageTableModel extends AbstractTableModel {
                 default:
                     cmp = compareDates(m1.getDate(), m2.getDate());
             }
-            return currentSort.getDirection() == SortOrder.Direction.DESCENDING ? -cmp : cmp;
+            return currentSort.getDirection() == SortOrder.Direction.DESC ? -cmp : cmp;
         };
         messages.sort(comparator);
     }

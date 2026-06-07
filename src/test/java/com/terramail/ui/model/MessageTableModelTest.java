@@ -72,7 +72,7 @@ class MessageTableModelTest {
 
     @Test
     void testSortBySubjectAscending() {
-        tableModel.setSortOrder(new SortOrder(SortOrder.Field.SUBJECT, SortOrder.Direction.ASCENDING));
+        tableModel.setSortOrder(new SortOrder(SortOrder.Field.SUBJECT, SortOrder.Direction.ASC));
 
         Message apple = new Message(1L, "s@test.com", "t@test.com", "", "Apple", Instant.now(), "B");
         Message banana = new Message(1L, "s@test.com", "t@test.com", "", "Banana", Instant.now(), "B");
@@ -87,7 +87,7 @@ class MessageTableModelTest {
 
     @Test
     void testSortBySubjectDescending() {
-        tableModel.setSortOrder(new SortOrder(SortOrder.Field.SUBJECT, SortOrder.Direction.DESCENDING));
+        tableModel.setSortOrder(new SortOrder(SortOrder.Field.SUBJECT, SortOrder.Direction.DESC));
 
         Message apple = new Message(1L, "s@test.com", "t@test.com", "", "Apple", Instant.now(), "B");
         Message banana = new Message(1L, "s@test.com", "t@test.com", "", "Banana", Instant.now(), "B");

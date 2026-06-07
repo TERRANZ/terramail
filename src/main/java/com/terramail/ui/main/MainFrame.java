@@ -17,7 +17,6 @@ import com.terramail.ui.panels.SettingsPanel;
 import com.terramail.ui.panels.SyncStatusPanel;
 
 import javax.swing.*;
-import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.*;
 import java.nio.file.Path;
 import java.util.List;
@@ -147,7 +146,7 @@ public class MainFrame extends JFrame {
             .filter(f -> f == currentField)
             .findFirst()
             .orElse(fields.get(0));
-        SortOrder newSort = new SortOrder(firstField, SortOrder.Direction.DESCENDING);
+        SortOrder newSort = new SortOrder(firstField, SortOrder.Direction.DESC);
         messageTableModel.setSortOrder(newSort);
 
         List<com.terramail.model.Message> messages = messageRepository.findByFolderId(folder.getId(), newSort);

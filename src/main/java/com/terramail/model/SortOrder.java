@@ -9,7 +9,7 @@ public class SortOrder {
     }
 
     public enum Direction {
-        ASCENDING, DESCENDING
+        ASC, DESC
     }
 
     private final Field field;
@@ -42,7 +42,7 @@ public class SortOrder {
     }
 
     public SortOrder reversed() {
-        return new SortOrder(field, direction == Direction.ASCENDING ? Direction.DESCENDING : Direction.ASCENDING);
+        return new SortOrder(field, direction == Direction.ASC ? Direction.DESC : Direction.ASC);
     }
 
     @Override

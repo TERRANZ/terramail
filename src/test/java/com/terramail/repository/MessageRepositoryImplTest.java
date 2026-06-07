@@ -54,7 +54,7 @@ class MessageRepositoryImplTest {
         repository.save(m1);
         repository.save(m2);
 
-        SortOrder sort = new SortOrder(SortOrder.Field.DATE, SortOrder.Direction.DESCENDING);
+        SortOrder sort = new SortOrder(SortOrder.Field.DATE, SortOrder.Direction.DESC);
         List<Message> messages = repository.findByFolderId(testFolder.getId(), sort);
         assertEquals(2, messages.size());
     }
@@ -103,7 +103,7 @@ class MessageRepositoryImplTest {
         repository.save(new Message(testFolder.getId(), "s@test.com", "r@test.com", null, "Important Meeting", Instant.now(), "Body"));
         repository.save(new Message(testFolder.getId(), "s@test.com", "r@test.com", null, "Regular Email", Instant.now(), "Body"));
 
-        SortOrder sort = new SortOrder(SortOrder.Field.DATE, SortOrder.Direction.DESCENDING);
+        SortOrder sort = new SortOrder(SortOrder.Field.DATE, SortOrder.Direction.DESC);
         List<Message> results = repository.searchBySubject(testFolder.getId(), "Meeting", sort);
         assertEquals(1, results.size());
         assertEquals("Important Meeting", results.get(0).getSubject());
@@ -114,7 +114,7 @@ class MessageRepositoryImplTest {
         repository.save(new Message(testFolder.getId(), "s1@test.com", "r@test.com", null, "Zebra", Instant.now(), "Body"));
         repository.save(new Message(testFolder.getId(), "s2@test.com", "r@test.com", null, "Apple", Instant.now(), "Body"));
 
-        SortOrder ascSort = new SortOrder(SortOrder.Field.SUBJECT, SortOrder.Direction.ASCENDING);
+        SortOrder ascSort = new SortOrder(SortOrder.Field.SUBJECT, SortOrder.Direction.ASC);
         List<Message> messages = repository.findByFolderId(testFolder.getId(), ascSort);
         assertEquals("Apple", messages.get(0).getSubject());
     }

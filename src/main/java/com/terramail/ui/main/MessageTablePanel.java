@@ -65,7 +65,7 @@ public class MessageTablePanel extends JPanel {
                     if (currentSort.getField() == field) {
                         newSort = currentSort.reversed();
                     } else {
-                        newSort = new SortOrder(field, SortOrder.Direction.DESCENDING);
+                        newSort = new SortOrder(field, SortOrder.Direction.DESC);
                     }
                     messageTableModel.setSortOrder(newSort);
                     if (sortChangeListener != null) {
