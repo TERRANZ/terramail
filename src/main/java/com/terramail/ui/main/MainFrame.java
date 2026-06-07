@@ -321,6 +321,13 @@ public class MainFrame extends JFrame {
                     List<Folder> serverFolders = emailService.listAvailableFolders();
                     publish("Found " + serverFolders.size() + " folder(s) on server.");
 
+                    // Build a map of folder name to folder for parent lookup (include existing folders)
+                    java.util.Map<String, Folder> folderByName = new java.util.HashMap<>();
+                    List<Folder> dbFolders = folderRepository.findByAccountId(settings.getId());
+                    for (Folder dbFolder : dbFolders) {
+                        folderByName.put(dbFolder.getName(), dbFolder);
+                    }
+
                     for (Folder serverFolder : serverFolders) {
                         Folder existing = folderRepository.findByName(settings.getId(), serverFolder.getName());
                         if (existing == null) {
@@ -328,9 +335,33 @@ public class MainFrame extends JFrame {
                             newFolder.setAccountId(settings.getId());
                             newFolder.setName(serverFolder.getName());
                             newFolder.setType(serverFolder.getType());
+                            newFolder.setImapPath(serverFolder.getImapPath());
+
+                            // Resolve parent folder ID based on IMAP path
+                            long parentFolderId = resolveParentFolderId(serverFolder.getImapPath(), folderByName);
+                            newFolder.setParentFolderId(parentFolderId);
+
                             folderRepository.save(newFolder);
+                            folderByName.put(serverFolder.getName(), newFolder);
                             publish("Added folder: " + serverFolder.getName());
                         } else {
+                            // Update existing folder with imapPath and parentFolderId if needed
+                            boolean updated = false;
+                            if (existing.getImapPath() == null || existing.getImapPath().isEmpty()) {
+                                existing.setImapPath(serverFolder.getImapPath());
+                                updated = true;
+                            }
+                            if (existing.getParentFolderId() == 0) {
+                                long parentFolderId = resolveParentFolderId(serverFolder.getImapPath(), folderByName);
+                                if (parentFolderId != 0) {
+                                    existing.setParentFolderId(parentFolderId);
+                                    updated = true;
+                                }
+                            }
+                            if (updated) {
+                                folderRepository.save(existing);
+                            }
+                            folderByName.put(serverFolder.getName(), existing);
                             publish("Folder already exists: " + serverFolder.getName());
                         }
                     }
@@ -339,6 +370,29 @@ public class MainFrame extends JFrame {
                     publish("Failed to load folders: " + e.getMessage());
                 }
                 return null;
+            }
+
+            private long resolveParentFolderId(String imapPath, java.util.Map<String, Folder> folderByName) {
+                if (imapPath == null || imapPath.isEmpty()) {
+                    return 0;
+                }
+                char separator = '/';
+                int lastSeparatorIndex = imapPath.lastIndexOf(separator);
+                if (lastSeparatorIndex > 0) {
+                    String parentPath = imapPath.substring(0, lastSeparatorIndex);
+                    // Get the immediate parent folder name (last component of parent path)
+                    String parentName = parentPath.substring(parentPath.lastIndexOf(separator) + 1);
+                    Folder parentFolder = folderByName.get(parentName);
+                    if (parentFolder != null) {
+                        return parentFolder.getId();
+                    }
+                    // Try to find in database
+                    Folder dbParent = folderRepository.findByName(settings.getId(), parentName);
+                    if (dbParent != null) {
+                        return dbParent.getId();
+                    }
+                }
+                return 0;
             }
 
             @Override

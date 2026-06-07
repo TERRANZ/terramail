@@ -37,6 +37,10 @@ public class EmailService {
         this(settings, attachmentService, 10);
     }
 
+    public long getAccountId() {
+        return settings.getId();
+    }
+
     public void updateSettings(AccountSettings newSettings) {
         this.settings = newSettings;
     }
@@ -191,6 +195,7 @@ public class EmailService {
         logger.fine(() -> "Detected folder type for '" + name + "': " + type);
 
         Folder folder = new Folder();
+        folder.setAccountId(settings.getId());
         folder.setName(name);
         folder.setType(type);
         folder.setImapPath(imapPath);
