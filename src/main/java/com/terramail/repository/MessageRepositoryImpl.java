@@ -11,8 +11,12 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 public class MessageRepositoryImpl implements MessageRepository {
+
+    private static final Logger LOGGER = Logger.getLogger(MessageRepositoryImpl.class.getName());
 
     private final HikariDataSource dataSource;
 
@@ -23,50 +27,74 @@ public class MessageRepositoryImpl implements MessageRepository {
     @Override
     public List<Message> findByFolderId(long folderId, SortOrder sortOrder) {
         String sql = "SELECT * FROM messages WHERE folder_id = ? ORDER BY " + getSortColumn(sortOrder.getField()) + " " + sortOrder.getDirection() + ", id DESC";
+        LOGGER.info(String.format("[MESSAGE LOADING] Querying messages for folder_id=%d, sort_field=%s, direction=%s", folderId, sortOrder.getField(), sortOrder.getDirection()));
+        long startTime = System.currentTimeMillis();
         List<Message> messages = new ArrayList<>();
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, folderId);
+            LOGGER.fine(String.format("[MESSAGE LOADING] Executing SQL: %s with folderId=%d", sql, folderId));
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
-                messages.add(mapRow(rs));
+                Message msg = mapRow(rs);
+                messages.add(msg);
+                LOGGER.fine(String.format("[MESSAGE LOADING] Loaded message: id=%d, subject=%s, from=%s, date=%s, seen=%b", msg.getId(), msg.getSubject(), msg.getFrom(), msg.getDate(), msg.isSeen()));
             }
         } catch (SQLException e) {
+            LOGGER.severe(String.format("[MESSAGE LOADING] Failed to fetch messages for folder_id=%d: %s", folderId, e.getMessage()));
             throw new RuntimeException("Failed to fetch messages for folder " + folderId, e);
         }
+        long duration = System.currentTimeMillis() - startTime;
+        LOGGER.info(String.format("[MESSAGE LOADING] Completed loading %d messages for folder_id=%d in %d ms", messages.size(), folderId, duration));
         return messages;
     }
 
     @Override
     public Message findById(long id) {
         String sql = "SELECT * FROM messages WHERE id = ?";
+        LOGGER.info(String.format("[MESSAGE LOADING] Querying message by id=%d", id));
+        long startTime = System.currentTimeMillis();
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, id);
+            LOGGER.fine(String.format("[MESSAGE LOADING] Executing SQL: %s with id=%d", sql, id));
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
-                return mapRow(rs);
+                Message msg = mapRow(rs);
+                LOGGER.fine(String.format("[MESSAGE LOADING] Found message: id=%d, subject=%s, from=%s, date=%s", msg.getId(), msg.getSubject(), msg.getFrom(), msg.getDate()));
+                return msg;
             }
         } catch (SQLException e) {
+            LOGGER.severe(String.format("[MESSAGE LOADING] Failed to fetch message id=%d: %s", id, e.getMessage()));
             throw new RuntimeException("Failed to fetch message " + id, e);
         }
+        long duration = System.currentTimeMillis() - startTime;
+        LOGGER.info(String.format("[MESSAGE LOADING] Completed message lookup for id=%d, not found in %d ms", id, duration));
         return null;
     }
 
     @Override
     public List<Message> findByAccountId(long accountId) {
         String sql = "SELECT m.* FROM messages m JOIN folders f ON m.folder_id = f.id WHERE f.account_id = ?";
+        LOGGER.info(String.format("[MESSAGE LOADING] Querying all messages for account_id=%d", accountId));
+        long startTime = System.currentTimeMillis();
         List<Message> messages = new ArrayList<>();
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, accountId);
+            LOGGER.fine(String.format("[MESSAGE LOADING] Executing SQL: %s with accountId=%d", sql, accountId));
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
-                messages.add(mapRow(rs));
+                Message msg = mapRow(rs);
+                messages.add(msg);
+                LOGGER.fine(String.format("[MESSAGE LOADING] Loaded message: id=%d, subject=%s, folder_id=%d", msg.getId(), msg.getSubject(), msg.getFolderId()));
             }
         } catch (SQLException e) {
+            LOGGER.severe(String.format("[MESSAGE LOADING] Failed to fetch messages for account_id=%d: %s", accountId, e.getMessage()));
             throw new RuntimeException("Failed to fetch messages for account " + accountId, e);
         }
+        long duration = System.currentTimeMillis() - startTime;
+        LOGGER.info(String.format("[MESSAGE LOADING] Completed loading %d messages for account_id=%d in %d ms", messages.size(), accountId, duration));
         return messages;
     }
 
@@ -166,18 +194,26 @@ public class MessageRepositoryImpl implements MessageRepository {
     @Override
     public List<Message> searchBySubject(long folderId, String keyword, SortOrder sortOrder) {
         String sql = "SELECT * FROM messages WHERE folder_id = ? AND subject LIKE ? ORDER BY " + getSortColumn(sortOrder.getField()) + " " + sortOrder.getDirection() + ", id DESC";
+        LOGGER.info(String.format("[MESSAGE LOADING] Searching messages in folder_id=%d for keyword=%s, sort_field=%s, direction=%s", folderId, keyword, sortOrder.getField(), sortOrder.getDirection()));
+        long startTime = System.currentTimeMillis();
         List<Message> messages = new ArrayList<>();
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, folderId);
             stmt.setString(2, "%" + keyword + "%");
+            LOGGER.fine(String.format("[MESSAGE LOADING] Executing SQL: %s with folderId=%d, keyword=%s", sql, folderId, keyword));
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
-                messages.add(mapRow(rs));
+                Message msg = mapRow(rs);
+                messages.add(msg);
+                LOGGER.fine(String.format("[MESSAGE LOADING] Matched message: id=%d, subject=%s", msg.getId(), msg.getSubject()));
             }
         } catch (SQLException e) {
+            LOGGER.severe(String.format("[MESSAGE LOADING] Failed to search messages in folder_id=%d for keyword=%s: %s", folderId, keyword, e.getMessage()));
             throw new RuntimeException("Failed to search messages in folder " + folderId, e);
         }
+        long duration = System.currentTimeMillis() - startTime;
+        LOGGER.info(String.format("[MESSAGE LOADING] Completed search for keyword=%s in folder_id=%d, found %d messages in %d ms", keyword, folderId, messages.size(), duration));
         return messages;
     }
 
